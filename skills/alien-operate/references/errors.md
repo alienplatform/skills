@@ -52,6 +52,9 @@ on purpose. On Azure, deleted key vaults stay soft-deleted for their retention p
 | `FEATURE_NOT_SUPPORTED` from `debug exec` | `debug exec` works on Your machines and local deployments. Elsewhere use `commands invoke` or `debug` with an access request. |
 | `Limit must be between 1 and 1000` | Narrow `--from`/`--to` and run several queries |
 | `--from` rejected | Use RFC 3339 with a zone: `2026-01-15T09:00:00Z` |
+| `COMMAND_TARGET_AMBIGUOUS` (409) from `commands invoke` | The stack has more than one worker that handles commands, and the CLI has no flag to pick one. Report it with the deployment ID and the command name; don't retry in a loop |
+| `belongs to a different project` on `destroy` | Run `alien upgrade` and retry with the deployment's own `--project`. If it persists, use `alien deployments delete` |
+| `Deployment '<n>' is not tracked` right after `alien deploy` on the same machine | The OS keyring wasn't available, so tracking lived in memory for one run. Use `alien deployments delete <dep>` instead of `destroy` |
 | `Failed to get deployment` from `alien logs` on a deleted deployment | `alien logs --manager <mgr> --project <p> -q 'resource_attributes.alien.deployment_id:<dep>'` |
 | `--manager` errors without a project | Add `--project` |
 
