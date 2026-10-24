@@ -13,9 +13,12 @@ Requirement owner: <who asked, e.g. "Customer 1 security team">
 
 > <the requirement in the customer's words>
 
-Reason: <sensitive data | private systems | low latency>
-Answers: <who holds the key | whose model | where content lives | what must be reached inside | where it runs | latency/offline | how it is operated>
-Platforms: <AWS, Google Cloud, Azure, Kubernetes, Linux hosts>
+Answers (from `questions.md`):
+- Why it runs outside your cloud: <sensitive data | private networks | local resources | latency | updates and operations only | everything>
+- Where it runs: <single-tenant | their cloud account | their Kubernetes | their servers or devices>
+- What may leave: <metadata, not content | content and logs stay | ...> (sensitive data only)
+- Sensitive kinds: <content, derived, describing text, ...> (sensitive data only)
+
 Out of scope: <what the customer did not ask for>
 
 ## Components
@@ -23,6 +26,13 @@ Out of scope: <what the customer did not ask for>
 | Component | Path | Data it touches | Verdict | Reason |
 |---|---|---|---|---|
 | <api> | `<path>` | <users, documents> | <stays/moves/split> | <one line> |
+
+## What stays where
+
+Only when sensitive data is in scope. The filled worksheet from `classify-data.md`.
+
+| Field or path | Where in the code | Class | Plane | Crosses as | Reason or open question |
+|---|---|---|---|---|---|
 
 ## Candidates
 

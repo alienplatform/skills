@@ -1,6 +1,6 @@
 ---
 name: alien-architecture
-description: Decide which part of a product should run outside your own cloud, and write the decision down before any code changes. Use when a customer or prospect asks for BYOC (bring your own cloud), single-tenant or dedicated deployments, customer-managed keys (BYOK), their own AI models or model account, access to systems only reachable inside their network (a cluster, a private database, devices), low latency next to their app, on-prem, Kubernetes or bare-metal installs, or remote operations access to an install you already ship; when asked "what should run in the customer's cloud" or to design a control plane / data plane split; or when evaluating Alien for a repository. Produces docs/alien-architecture.md with 2-3 candidates, a recommendation, and rejected options, then stops for approval. Hand implementation to the alien-integration skill.
+description: Decide which part of a product should run outside your own cloud, and write the decision down before any code changes. Use when a customer or prospect asks for BYOC (bring your own cloud), single-tenant or dedicated deployments, customer-managed keys (BYOK), their own AI models or model account, access to systems only reachable inside their network (a cluster, a private database, devices), low latency next to their app, on-prem, Kubernetes or bare-metal installs, or updates and remote operations for an install you already ship; when asked "what should run in the customer's cloud" or to design a control plane / data plane split; or when evaluating Alien for a repository. Asks a few multiple-choice questions, classifies which data is sensitive, then produces docs/alien-architecture.md with 2-3 candidates, a recommendation, and rejected options, and stops for approval. Hand implementation to the alien-integration skill.
 license: Apache-2.0
 metadata:
   author: alienplatform
@@ -9,24 +9,23 @@ metadata:
 
 # Alien architecture
 
-Alien is infrastructure for software outside your cloud. It deploys code into many remote
-environments (customer cloud accounts, dedicated accounts, Kubernetes clusters, Linux servers,
-devices), keeps every copy updated, and lets the vendor's backend call into it and fix it. Teams do
-this for three reasons:
+Alien provides infrastructure for deploying and operating software in remote environments at
+scale: customer cloud accounts, dedicated accounts in the vendor's cloud, Kubernetes clusters, Linux
+servers, and devices. Software runs there to be close to:
 
-1. **Sensitive data**: keep it in place or isolated (single-tenant, BYOC, customer-managed keys,
-   models in the customer's cloud).
-2. **Private systems**: reach what is only reachable from inside, such as a cluster's API, a
-   database in a private subnet, on-prem servers, or devices.
-3. **Low latency**: answer next to the customer's app or users.
+- **Sensitive data**: keep it in the customer's environment, or isolated (single-tenant,
+  customer-managed keys, the customer's model account).
+- **Private networks**: reach a database in their VPC or the API of their cluster.
+- **Local resources**: read files and processes on specific machines.
+- **Latency-critical workloads**: answer next to the app that calls you.
 
-What gets deployed can be nothing at all (only the customer's key or bucket), an agent, a cache,
-the part of the product that touches the data, or the whole product. The vendor's backend stays in
-the vendor's cloud; Alien does not host it.
+What gets deployed can be nothing at all (only the customer's key or model account), a small
+agent, the part of the product that touches the data, or the whole product. The vendor's backend
+stays in the vendor's cloud.
 
-This skill decides the smallest piece that meets one customer requirement for one repository.
-It ends with a written decision record and the user's approval. Do not write `alien.ts`, change
-application code, or create cloud resources while using it. Implementation is the
+This skill finds the smallest piece that meets the requirement, asks the user a few questions to
+get there, and ends with a written decision record and the user's approval. Do not write
+`alien.ts`, change application code, or create cloud resources while using it. Building is the
 `alien-integration` skill.
 
 ## Terms
@@ -77,62 +76,38 @@ Read the use-case page that matches the requirement:
 
 Work through the steps in order. Do not skip to a design.
 
-### 1. Write down the requirement in the customer's words
+### 1. Read before asking
 
-Ask the user if it is not in the conversation. Quote it. Then name the reason behind it
-(sensitive data, private systems, low latency) and the question it answers. A requirement can have
-more than one reason; one is enough. The questions are independent; one does not imply another:
+Read the conversation and the repository: README, deploy files (Dockerfiles, Helm, Terraform,
+compose), data models, and anything that talks to customer systems. Quote the customer's
+requirement if one was given.
 
-| Question | Typical words | Reason | Smallest answer |
-|---|---|---|---|
-| Who holds the key? | "we need to revoke access", "BYOK" | Sensitive data | customer-managed keys |
-| Whose model account sees prompts? | "under our AI agreement", "no third-party LLM" | Sensitive data | local models |
-| Where is content stored and processed? | "our data can't leave our account", "no shared servers" | Sensitive data | single-tenant, or the part that touches the data |
-| What must you reach inside? | "our cluster isn't reachable from the internet", "the database is in a private subnet" | Private systems | an agent or connector |
-| Where must it physically run? | "on our servers", "in our data center" | Private systems | on-prem, the whole product |
-| How fast or offline? | "checks must not add latency", "keep working if you're down" | Low latency | a local cache |
-| How do you operate it? | "no inbound access", "you can't have a VPN" | Any | Remote Operator |
+### 2. Ask the questions
 
-Also record: which clouds or platforms, who the buyer's security reviewer is, and anything they
-already ruled out. If the requirement is vague ("enterprise wants BYOC"), list the questions to
-ask the buyer and propose candidates for the two most likely answers.
+Ask the batch in `references/questions.md`: three or four multiple-choice questions in one turn,
+each with **Other**, with likely answers pre-selected from what you read. Don't ask what the code
+or conversation already answers, and don't ask follow-ups one at a time. Restate the answers in two
+lines before going on.
 
-### 2. Inventory the components
+### 3. Inventory the components
 
 Read the code, not only the README. Fill the worksheet in `references/inventory.md`: every
 service, database, queue, job, and external dependency, with file paths, the data each touches,
-the private systems it reaches, special hardware, latency budget, and how it is deployed today.
-If the product already ships an installer (Helm chart, Terraform, Docker Compose), record it.
+the private systems it reaches, special hardware, latency budget, and how it's deployed today. If
+the product already ships an installer (Helm chart, Terraform, Docker Compose), record it.
 
-### 3. Mark what has to move
+### 4. Classify the data
 
-For each component ask: does it need to be next to the customer's data, a private system, or
-the customer's app? If not, it stays in the vendor's cloud. Derived data (indexes, caches,
-embeddings over customer data) is customer data. Mark each component `stays`, `moves`, or
-`depends on the buyer` with a one-line reason.
+When the user cares about sensitive data, run `references/classify-data.md`. Find every field and
+every path that carries data, sort them into classes, and settle the judgment calls with the user,
+a few at a time, multiple choice. This decides how big the data plane is. Skip this step when
+sensitive data isn't one of the answers.
 
-### 4. Propose 2-3 candidates
+### 5. Propose 2–3 candidates
 
-Pick from the five options below, smallest first. Always include the smallest candidate that could
-meet the requirement, and one larger alternative. Start from the reason, not from a split: a
-private-systems requirement usually needs an agent, not a data plane. Details and wrong-option
-signals for each are in `references/what-to-run-remotely.md`.
-
-| Option | What runs in the customer's environment | Usual reason |
-|---|---|---|
-| Only the customer's own services | Nothing of yours; their key, model account, or bucket | Sensitive data |
-| An agent or connector | One small workload next to a private system | Private systems |
-| A local cache | A key-value store your backend keeps current | Low latency |
-| The part that touches the data | Content routes or a pipeline, plus their storage (the control plane / data plane split) | Sensitive data |
-| The whole product | Everything, possibly daemons on the customer's hosts | Any |
-
-Remote Operator fits beside any option, including an install the vendor already ships (Helm,
-Terraform, ECS) with no other Alien deployment. Single-tenant is a placement, not a separate
-design: the same deployment in a dedicated account in the vendor's cloud, and the same `alien.ts`
-can move to the customer's account later.
-
-The control plane / data plane split is the usual answer when the requirement is "our data stays
-with us". Do not force other requirements into it.
+Apply `references/decision-rules.md` to the answers and the worksheet. Always include the smallest
+candidate that could meet the requirement, and one larger alternative. Details and wrong-option
+signals are in `references/what-to-run-remotely.md`.
 
 For each candidate, write all of these. A candidate missing one is not finished:
 
@@ -141,22 +116,18 @@ For each candidate, write all of these. A candidate missing one is not finished:
 2. **What crosses the boundary, per call**: every call between the vendor's cloud and the
    deployment, its direction, its mechanism (outbound HTTPS, command, remote binding, browser
    direct), and the exact fields it carries. Content should not cross.
-3. **Alien resources**: the resources the deployment declares (`Worker`, `Container`, `Daemon`,
-   `Storage`, `Kv`, `Queue`, `Postgres`, `Vault`, `Key`, `AI`, ...) or the hosted service used
-   (Encryption Gateway, AI Gateway).
-4. **Setup and permissions**: which resources are frozen (customer creates at setup, fewer
-   management permissions) and which are live (Alien updates every release), push or pull, and
+3. **Alien resources**: what the deployment declares (`Worker`, `Container`, `Daemon`, `Storage`,
+   `Kv`, `Queue`, `Postgres`, `Vault`, `Key`, `AI`, ...) or the hosted service used.
+4. **Setup and permissions**: which resources are frozen and which are live, push or pull, and
    which changes would need the customer's admin to rerun setup.
 5. **Failure behavior**: what happens when the deployment, the vendor's backend, or Alien is
-   unreachable. Must fail closed: no fallback to processing that customer's data in the vendor's
-   cloud.
-6. **Operational cost**: what now runs in every customer environment, what the vendor must
-   support, upgrade, and debug there, and cloud cost the customer pays.
-7. **Why not without Alien?**: the plain alternative (ship a Helm chart, ask the customer to
-   bring their own Redis, a per-customer Terraform run, a VPN) and why it is worse or better here.
-   If the plain alternative wins, say so.
+   unreachable. Fail closed: no fallback to processing the customer's data in the vendor's cloud.
+6. **Operational cost**: what now runs in every customer environment, what the vendor supports
+   there, and the cloud cost the customer pays.
+7. **Why not without Alien?**: the plain alternative (ship a Helm chart, a per-customer Terraform
+   run, a VPN) and why it's worse or better here. If the plain alternative wins, say so.
 
-### 5. Run the boundary checks
+### 6. Run the boundary checks
 
 Apply every check in `references/boundary-checks.md` to every candidate. The four that catch most
 mistakes:
@@ -171,18 +142,18 @@ mistakes:
 
 Fix the candidate or reject it, and record why.
 
-### 6. Recommend one
+### 7. Recommend one
 
 Prefer the smallest candidate that meets the requirement as the customer stated it. Designs
 usually shrink during this step. Say what would make you choose a larger option later.
 
-### 7. Write the decision record
+### 8. Write the decision record
 
 Write `docs/alien-architecture.md` in the user's repository from
-`references/decision-record-template.md`. Include the rejected candidates and the reason for each.
-Next customer, someone will ask again.
+`references/decision-record-template.md`. Include the answers to the questions, the data worksheet, and the rejected candidates with the
+reason for each.
 
-### 8. Stop for approval
+### 9. Stop for approval
 
 Summarize the recommendation in five lines, list open questions for the buyer, and ask the user to
 approve, change, or reject it. Do not start implementation in the same turn. After approval, use
