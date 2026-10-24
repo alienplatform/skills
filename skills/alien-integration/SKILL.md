@@ -62,6 +62,13 @@ Inside an existing repository, `alien init` writes to an `alien/` directory by d
 also write `alien.ts` by hand. Docker must be running for `alien dev`. Keep the integration in its own directory or workspace
 package with its own lockfile when the repo's dependency graph is sensitive.
 
+### 2b. Existing chart or images → `references/existing-app.md`
+
+If the repo already ships container images with a Helm chart or compose file and the whole
+product installs remotely, follow that file before writing `alien.ts`: render the chart, check
+every image, show the mapping, then convert Jobs, sidecars, and config files as it describes. A
+chart that looks unsupported at first reading almost never is.
+
 ### 3. Write `alien.ts` → `references/alien-ts.md`
 
 Declare what the decision record deploys and nothing else. Rules that reviewers check:
