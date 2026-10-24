@@ -28,13 +28,15 @@ Then list, separately:
 - **Calls between components** that would cross the boundary if the two ended up on different
   sides. Note the fields each carries.
 - **Third-party services** each component calls (auth provider, Stripe, analytics, email,
-  LLM). These stay in the control plane unless the requirement names them.
+  LLM). These stay in the vendor's cloud unless the requirement names them.
 - **State that must survive an upgrade** (running jobs, sessions, VMs). It constrains the
   workload model later.
 
 ## Default placement
 
-Defaults, not answers. The buyer's requirement and security review override them.
+Defaults for the control plane / data plane split, when the requirement is about customer data.
+They are not answers: the buyer's requirement and security review override them. For a
+private-systems or latency requirement, usually only the connector or the cache moves.
 
 | Component | Usually | Why |
 |---|---|---|
@@ -59,5 +61,7 @@ Defaults, not answers. The buyer's requirement and security review override them
   call the data plane for a count.
 - An existing Helm chart or Terraform module customers already run: Remote Operator beside it may
   be all the requirement needs.
-- Hardware needs (KVM, nested virtualization, GPUs, local NVMe): the data plane will be a daemon
+- A component that already calls into customer networks (VPN, allowlisted IPs, a customer-run
+  connector): an agent or connector deployment is the likely candidate.
+- Hardware needs (KVM, nested virtualization, GPUs, local NVMe): the deployment will be a daemon
   or container on specific compute. Check cloud quotas on day one.

@@ -17,13 +17,13 @@ import * as alien from "@alienplatform/core"
 // Inputs. Developer inputs are set by you when you create a deployment.
 // Deployer inputs are asked of the customer's admin at setup.
 const config = alien.inputs({
-  // Where the data plane reports usage and status (metadata only).
-  controlPlaneUrl: alien.string({
+  // Where the deployment reports usage and status (metadata only).
+  acmeApiUrl: alien.string({
     providedBy: "developer",
     required: true,
-    label: "Control plane URL",
-    description: "Your API. The data plane calls it over outbound HTTPS.",
-    env: "CONTROL_PLANE_URL",
+    label: "Acme API URL",
+    description: "Where this deployment reports usage and status.",
+    env: "ACME_API_URL",
   }),
   // Public key that verifies short-lived tokens your control plane issues
   // to browsers. The private key never leaves your cloud.
@@ -142,7 +142,7 @@ frozen resources up front.
 
 ## Inputs
 
-- `providedBy: "developer"`: you set it per deployment (control plane URL, public keys, plan
+- `providedBy: "developer"`: you set it per deployment (your API URL, public keys, plan
   limits). Pass with `alien onboard <name> --input id=value` or through the API.
 - `providedBy: "deployer"`: the customer's admin sets it at setup. Keep these few and real.
 - `alien.secret({ providedBy: "deployer" })`: the admin writes it into their own secret store;

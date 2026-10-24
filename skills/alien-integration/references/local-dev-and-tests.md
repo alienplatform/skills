@@ -24,7 +24,7 @@ alien dev commands invoke --deployment local-dev/default \
   --command process-document --params '{"path": "a.txt"}'
 
 # A second local customer, with developer inputs
-alien dev deploy --name customer-2 --platform local --input controlPlaneUrl=http://localhost:3000
+alien dev deploy --name customer-2 --platform local --input acmeApiUrl=http://localhost:3000
 
 # A deployer secret, as the customer's admin would set it
 alien dev vault set <vault> <SECRET_NAME> --stdin
@@ -51,7 +51,7 @@ let deployment: Deployment
 beforeAll(async () => {
   deployment = await deploy({
     app: ".",
-    environmentVariables: [{ name: "CONTROL_PLANE_URL", value: "http://localhost:9999" }],
+    environmentVariables: [{ name: "ACME_API_URL", value: "http://localhost:9999" }],
   })
 }, 300_000)
 

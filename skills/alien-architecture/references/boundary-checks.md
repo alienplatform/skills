@@ -5,38 +5,43 @@ means fix the candidate or reject it.
 
 ## Content and metadata
 
-1. **Does customer content transit the control plane?** Trace each call in the "what crosses"
-   table. Request bodies, query strings, URL paths, logs, error reports, analytics events, and
-   browser navigation all count. Fix: browser-to-data-plane calls with a short-lived token, signed
-   upload URLs, thin events.
+1. **Does customer content transit the vendor's cloud?** Trace each call in the "what crosses"
+   table. Request bodies, query strings, URL paths, command results, logs, error reports,
+   analytics events, and browser navigation all count. Fix: browser-to-deployment calls with a
+   short-lived token, signed upload URLs, thin events, smaller command results.
 2. **Does content transit an Alien hosted gateway?** The Encryption Gateway and AI Gateway see
    plaintext. That can be acceptable, but the record must say it.
 3. **Who defined "metadata"?** If the buyer's security review has not seen the list of fields that
    cross, mark it as an open question. Email addresses, file names, subject lines, counterparty
    IDs, and repository names are often treated as content.
-4. **Do logs and telemetry from the data plane carry content?** Logs reach the manager unless
+4. **Do logs and telemetry from the deployment carry content?** Logs reach the manager unless
    telemetry is turned off for that deployment. Plan log redaction or turning telemetry off.
 
 ## Placement
+
+Checks 5 and 6 apply when the candidate is the control plane / data plane split. Check 7 applies to
+every candidate.
 
 5. **Is something in the data plane that belongs in the control plane?** Sign-in, user management,
    billing, plan enforcement, tenancy, admin UI, analytics, and release logic stay in the control
    plane. A data plane that runs its own auth provider is a smell.
 6. **Is something in the control plane that touches content?** Background jobs, exports, search
    indexing, and AI features often do.
-7. **Is the data plane the smallest piece?** For each component in it, write why it cannot stay
-   in the control plane. Remove those without a reason.
-8. **Does the design assume Alien hosts the control plane?** It does not. The vendor's control plane
+7. **Is the deployment the smallest piece?** For each component in it, write why it cannot stay
+   in the vendor's cloud. Remove those without a reason. A private-systems or latency requirement
+   that ended up as a full data plane is a sign to step back to an agent or a cache.
+8. **Does the design assume Alien hosts the vendor's backend?** It does not. The vendor's backend
    calls the Alien API.
 
 ## Trust and failure
 
-9. **Fail closed.** When the data plane is unreachable, content operations return an error. No
+9. **Fail closed.** When the deployment is unreachable, content operations return an error. No
    hosted fallback, no silent switch back after revocation.
 10. **No side doors.** No shell endpoint, no "send us the secret" step, no privileged debug path
     outside Remote Operator's named operations.
 11. **Customer secrets.** Values the customer provides go into their secret store (AWS SSM
-    Parameter Store, Google Secret Manager, Azure Key Vault). The control plane knows only names.
+    Parameter Store, Google Secret Manager, Azure Key Vault). The vendor's backend knows only
+   names.
 12. **Credentials for linked resources come from links, not inputs.** A design that asks the
     customer to paste a database password for a resource Alien creates is wrong.
 

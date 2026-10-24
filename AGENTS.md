@@ -31,7 +31,7 @@ This repository is public. Everything you commit here is visible to anyone.
 
 Plain, direct, second person. Short sentences. Define a term the first time a file uses it.
 No em dashes. Avoid filler words: easy, simple, simply, just, really, very, seamless, powerful,
-robust, leverage. Say "the data plane" or "the smallest piece", not "run your product in the
+robust, leverage. Say "the deployment" or "the smallest piece", not "run your product in the
 customer's cloud".
 
 ## Verifying changes

@@ -1,6 +1,6 @@
 ---
 name: alien-integration
-description: Implement an approved Alien control plane / data plane split end to end in a repository. Covers installing the alien CLI, writing a readable alien.ts, data-plane handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from the control plane, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm, Terraform, or Ansible deploy flow onto Alien.
+description: Implement an approved Alien design end to end in a repository, whether it deploys an agent, a cache, the part of the product that touches customer data (a control plane / data plane split), or the whole product. Covers installing the alien CLI, writing a readable alien.ts, handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from your backend, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm, Terraform, or Ansible deploy flow onto Alien.
 license: Apache-2.0
 compatibility: Requires Node.js 20+, Docker for alien dev, and network access to alien.dev. Cloud validation needs an AWS, Google Cloud, or Azure account the user controls.
 metadata:
@@ -16,7 +16,7 @@ code itself: how is this deployed today, and where does each process get its con
 
 ## Before you start
 
-1. **Read the decision record.** `docs/alien-architecture.md` names the rung, what runs where,
+1. **Read the decision record.** `docs/alien-architecture.md` names the option, what runs where,
    and what crosses the boundary. If it is missing or not approved, run the `alien-architecture`
    skill first. For a standalone path (only customer-managed keys, only local models, only Remote
    Operator), a short record is enough.
@@ -64,13 +64,13 @@ package with its own lockfile when the repo's dependency graph is sensitive.
 
 ### 3. Write `alien.ts` → `references/alien-ts.md`
 
-Declare the data plane and nothing else. Rules that reviewers check:
+Declare what the decision record deploys and nothing else. Rules that reviewers check:
 
 - Named declarations, one per resource, with a comment saying what it holds and why it is frozen
   or live. No loops that generate workloads from a list.
 - Frozen or live per resource. Lead every choice with permissions: frozen needs fewer management
   permissions and changes need the admin; live is updated by Alien on every release.
-- Inputs: `providedBy: "developer"` for values you set per deployment (control plane URL, public
+- Inputs: `providedBy: "developer"` for values you set per deployment (your API URL, public
   keys), `providedBy: "deployer"` only for real choices the customer's admin makes. Generate
   internal secrets with `generate: { length }`. Credentials for linked resources come from
   `.link()`, never from inputs.
@@ -78,18 +78,18 @@ Declare the data plane and nothing else. Rules that reviewers check:
 - Pick compute from how requests behave: `Worker` for request/response and commands, `Container`
   for long-running services, ports, GPUs, or vendor images, `Daemon` for one process per host.
 
-### 4. Write the data plane code
+### 4. Write the code that runs in the deployment
 
-Use `@alienplatform/sdk` in the workload: `command()` for functions the control plane calls,
+Use `@alienplatform/sdk` in the workload: `command()` for functions your backend calls,
 `storage()`, `kv()`, `queue()`, `vault()`, `postgres()` for linked resources. Return counts and
 status from commands, not content. Do not edit the product's core to fit Alien; wrap it, and put
 any required core change behind an opt-in flag that leaves current behavior unchanged.
 
-### 5. Connect the planes → `references/connect-the-planes.md`
+### 5. Reach the deployment from your backend → `references/reach-a-deployment.md`
 
-Implement every row of the decision record's "what crosses" table, and nothing else: data plane
-to control plane over outbound HTTPS, control plane to data plane with commands or remote
-bindings, browser to data plane with a short-lived token.
+Implement every row of the decision record's "what crosses" table, and nothing else: deployment
+to your backend over outbound HTTPS, your backend to the deployment with commands or remote
+bindings, browser to the deployment with a short-lived token.
 
 ### 6. Run locally and test → `references/local-dev-and-tests.md`
 

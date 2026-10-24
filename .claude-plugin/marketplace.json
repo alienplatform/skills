@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "alien",
-      "description": "Decide what to run outside your cloud (control plane / data plane split) and implement it with Alien: alien.ts, local dev, tests, releases, setup links, and real-cloud validation.",
+      "description": "Decide what to run outside your cloud (the customer's own key or bucket, an agent, a cache, the part that touches the data, or the whole product) and implement it with Alien: alien.ts, local dev, tests, releases, setup links, and real-cloud validation.",
       "source": "./",
       "strict": false,
       "skills": ["./skills/alien-architecture", "./skills/alien-integration"]

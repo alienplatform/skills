@@ -6,7 +6,7 @@ the rest of your product stays SaaS.
 
 | Skill | Use it to |
 |---|---|
-| [`alien-architecture`](skills/alien-architecture/SKILL.md) | Decide what to run outside your cloud. Turns a customer requirement ("our data can't leave our account", "we need to revoke your access", "prompts must use our AI agreement") into 2-3 candidate control plane / data plane splits, recommends one, and writes `docs/alien-architecture.md` for approval. No code changes. |
+| [`alien-architecture`](skills/alien-architecture/SKILL.md) | Decide what to run outside your cloud. Turns a customer requirement ("our data can't leave our account", "our cluster isn't reachable from the internet", "checks must not add latency") into 2-3 candidates, from only the customer's key or bucket to an agent, a cache, the part that touches the data, or the whole product, recommends one, and writes `docs/alien-architecture.md` for approval. No code changes. |
 | [`alien-integration`](skills/alien-integration/SKILL.md) | Implement the approved split: `alien.ts`, data-plane code with `@alienplatform/sdk`, local runs with `alien dev`, tests, CI releases, setup links and status in your backend, the customer runbook, and validation in a real cloud. |
 
 They cover every Alien path: single-tenant deployments in your cloud, bring your own cloud (BYOC),
@@ -59,10 +59,10 @@ up to date. The skills themselves hold decision rules and checklists.
 skills/
   alien-architecture/
     SKILL.md
-    references/        inventory, size ladder, boundary checks, decision record template
+    references/        inventory, what to run remotely, boundary checks, decision record template
   alien-integration/
     SKILL.md
-    references/        profiling, alien.ts, connecting the planes, local dev and tests,
+    references/        profiling, alien.ts, reaching a deployment, local dev and tests,
                        releases and CI, control-plane integration, standalone paths,
                        patterns, customer runbook, validation
 .claude-plugin/marketplace.json

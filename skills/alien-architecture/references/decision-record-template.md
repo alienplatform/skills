@@ -13,7 +13,8 @@ Requirement owner: <who asked, e.g. "Customer 1 security team">
 
 > <the requirement in the customer's words>
 
-Answers: <where it runs | who holds the key | whose model | how it is operated | latency/offline>
+Reason: <sensitive data | private systems | low latency>
+Answers: <who holds the key | whose model | where content lives | what must be reached inside | where it runs | latency/offline | how it is operated>
 Platforms: <AWS, Google Cloud, Azure, Kubernetes, Linux hosts>
 Out of scope: <what the customer did not ask for>
 
@@ -25,34 +26,36 @@ Out of scope: <what the customer did not ask for>
 
 ## Candidates
 
-### A. <rung name> (recommended)
+### A. <option name> (recommended)
+
+Option: <only the customer's own services | an agent or connector | a local cache | the part that touches the data | the whole product>
 
 ```text
-┌─ CONTROL PLANE (your cloud) ─┐            ┌─ DATA PLANE (<where>) ─┐
-│ <items>                      │ ◀── <how>  │ <items>                │
-└──────────────────────────────┘            └────────────────────────┘
+┌─ YOUR CLOUD ─────────────────┐            ┌─ <where: customer-1 AWS account> ─┐
+│ <items>                      │ ◀── <how>  │ <items>                           │
+└──────────────────────────────┘            └───────────────────────────────────┘
 ```
 
 What crosses the boundary:
 
 | Call | Direction | Mechanism | Fields |
 |---|---|---|---|
-| <usage report> | DP → CP | outbound HTTPS | <customerId, count, period> |
-| <process document> | CP → DP | command | in: <documentId>; out: <status, pageCount> |
-| <view document> | browser → DP | endpoint + short-lived token | <content, never via CP> |
+| <usage report> | deployment → your backend | outbound HTTPS | <customerId, count, period> |
+| <process document> | your backend → deployment | command | in: <documentId>; out: <status, pageCount> |
+| <view document> | browser → deployment | endpoint + short-lived token | <content, never via your cloud> |
 
 Alien resources: <Storage "documents" (frozen), Kv "jobs" (frozen), Worker "processor" (live)>
 Setup: <push|pull>; customer admin runs <CloudFormation|Terraform|Helm|CLI> once.
 Changes that need setup rerun: <new frozen resource, permission changes>
-Failure behavior: <data plane down → content routes return 503; no hosted fallback>
+Failure behavior: <deployment down → content routes return 503; no hosted fallback>
 Operational cost: <what runs per customer, what the vendor supports>
 Why not without Alien: <the plain alternative and why it loses or wins>
 
-### B. <rung name>
+### B. <option name>
 
 <same fields>
 
-### C. <rung name> (optional)
+### C. <option name> (optional)
 
 <same fields>
 
@@ -60,16 +63,16 @@ Why not without Alien: <the plain alternative and why it loses or wins>
 
 | Check | A | B |
 |---|---|---|
-| Content transits the control plane | no | <...> |
+| Content transits your cloud | no | <...> |
 | Content transits a hosted gateway | no | <...> |
 | Metadata list reviewed by buyer | open question | |
-| Control-plane concerns in the data plane | none | |
+| Hosted concerns (sign-in, billing, UI) in the deployment | none | |
 | Fails closed | yes | |
 | Customer secrets stay in their store | yes | |
 
 ## Recommendation
 
-<Two to four sentences. Why A, and what would make you move to a larger rung later.>
+<Two to four sentences. Why A, and what would make you move to a larger option later.>
 
 ## Rejected options
 
