@@ -1,0 +1,20 @@
+{
+  "name": "alien-skills",
+  "owner": {
+    "name": "Alien",
+    "url": "https://alien.dev"
+  },
+  "metadata": {
+    "description": "Agent skills for designing and building software that runs outside your cloud with Alien",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "alien",
+      "description": "Decide what to run outside your cloud (control plane / data plane split) and implement it with Alien: alien.ts, local dev, tests, releases, setup links, and real-cloud validation.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/alien-architecture", "./skills/alien-integration"]
+    }
+  ]
+}
