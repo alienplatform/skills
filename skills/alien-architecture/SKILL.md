@@ -84,7 +84,7 @@ requirement if one was given.
 
 ### 2. Ask the questions
 
-Ask the batch in `references/questions.md`: three or four multiple-choice questions in one turn,
+Ask the batch in `references/questions.md`: three to five multiple-choice questions in one turn,
 each with **Other**, with likely answers pre-selected from what you read. Don't ask what the code
 or conversation already answers, and don't ask follow-ups one at a time. Restate the answers in two
 lines before going on.
@@ -124,7 +124,9 @@ For each candidate, write all of these. A candidate missing one is not finished:
    unreachable. Fail closed: no fallback to processing the customer's data in the vendor's cloud.
 6. **Operational cost**: what now runs in every customer environment, what the vendor supports
    there, and the cloud cost the customer pays.
-7. **Why not without Alien?**: the plain alternative (ship a Helm chart, a per-customer Terraform
+7. **Cost to build**: what changes in the product. A smaller data plane can mean rewriting most
+   of the backend; say how much.
+8. **Why not without Alien?**: the plain alternative (ship a Helm chart, a per-customer Terraform
    run, a VPN) and why it's worse or better here. If the plain alternative wins, say so.
 
 ### 6. Run the boundary checks

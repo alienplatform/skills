@@ -59,6 +59,7 @@ Setup: <push|pull>; customer admin runs <CloudFormation|Terraform|Helm|CLI> once
 Changes that need setup rerun: <new frozen resource, permission changes>
 Failure behavior: <deployment down → content routes return 503; no hosted fallback>
 Operational cost: <what runs per customer, what the vendor supports>
+Cost to build: <what changes in the product, and roughly how much>
 Why not without Alien: <the plain alternative and why it loses or wins>
 
 ### B. <option name>

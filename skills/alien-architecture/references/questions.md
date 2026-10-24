@@ -1,6 +1,6 @@
 # Questions to ask before proposing anything
 
-Ask once, in one batch of three or four questions. Every question is multiple choice and ends with
+Ask once, in one batch of three to five questions. Every question is multiple choice and ends with
 **Other**. Use the host's structured question tool when there is one (for example
 `AskUserQuestion`); otherwise send a numbered list the user can answer with letters.
 
@@ -11,6 +11,8 @@ Ask once, in one batch of three or four questions. Every question is multiple ch
 - Pre-select the likely answer when the evidence points to one, and say why in one short clause.
 - Ask Q1 and Q2 always. Ask Q3 and Q4 only when Q1 includes sensitive data. Ask Q5 instead of Q3
   and Q4 when Q1 is only "updates and operations", or includes "everything".
+- Ask Q6 only when the answers point to a data plane with sensitive data or the whole product,
+  and the repository doesn't already show how much the team can change. Never ask more than five.
 - After the answers, restate them in two lines ("You need X and Y; Z doesn't apply.") before the
   inventory.
 
@@ -92,3 +94,17 @@ Multi-select. Only when Q1 is just E, or includes F.
 - D. A one-command install for the customer (setup link, Helm, CloudFormation, Terraform)
 - E. The whole product in their environment, with no hosted part
 - Other
+
+## Q6. How much can you change the product now?
+
+Single-select. Only when the plan moves sensitive data or the whole product, and the repository
+doesn't answer it.
+
+- A. **Not yet.** Container images or a Helm chart only.
+- B. **Configuration and small adapters.**
+- C. **Split services and routes.**
+- D. **New code.** The remote part is greenfield.
+- Other
+
+A and B lead to deploying the existing backend as the data plane (R8d). C allows a route-level
+split (R8a, R8b). Smaller to run is not always smaller to build.
