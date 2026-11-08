@@ -2,6 +2,15 @@
 
 Load the section the decision record calls for.
 
+## Contents
+
+- Service overlay on an existing SaaS
+- A cache the customer reads locally
+- Stateless execution in the customer's account
+- Host daemons (loader and supervisor)
+- AI access from a workload
+- Endpoints and TLS
+
 ## Service overlay on an existing SaaS
 
 Sensitive routes move to a runtime in the customer's account; identity, policy, billing, and

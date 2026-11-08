@@ -1,6 +1,6 @@
 ---
 name: alien-operate
-description: Investigate and fix Alien deployments that are already running in remote environments. Use when a deployment failed, is stuck installing or updating, runs an older release than its channel, stopped reporting, shows errors to users, needs logs from a time window, needs a command or debug session inside the environment, or must be removed. Reads first with the alien CLI (deployments get, events, logs), finds the first failing resource and who must act, and proposes the exact next command. Never changes a deployment without the user's go-ahead. Not for writing alien.ts (alien-integration) or building the customer setup flow (alien-deploy).
+description: Investigates and fixes Alien deployments that already run in remote environments. Use when a deployment failed, is stuck in initial setup or an update, runs an older release than its channel, stopped reporting, waits for secrets, shows errors to users, needs logs from a time window, needs a command or debug session inside the environment, or must be removed. Reads first with the alien CLI (deployments get, events, logs), finds the first failing resource and who must act, and proposes the exact next command. Never changes a deployment without the user's go-ahead. Not for writing alien.ts (alien-integration) or building the customer setup flow (alien-deploy).
 license: Apache-2.0
 metadata:
   author: alienplatform
@@ -10,18 +10,20 @@ metadata:
 # Alien operate
 
 A deployment runs in an environment you don't own. You can't log into it, and the customer's admin
-owns its setup. This skill works from the `alien` CLI: it reads what the deployment reported, finds
-the first thing that failed, and names who fixes it: you (code or release), the customer's admin
-(setup, network, quota), or Alien support.
+owns its **initial setup**, the one-time step that created the management identity and the frozen
+resources. This skill works from the `alien` CLI: it reads what the deployment reported, finds the
+first thing that failed, and names who fixes it: you (code or release), the customer's admin
+(initial setup, network, quota), or Alien support.
 
-## Read the docs first
+## Docs
 
 Fetch these as Markdown when you need detail:
 
+- https://alien.dev/docs/production/troubleshooting.md
+- https://alien.dev/docs/production/debugging.md
 - https://alien.dev/docs/production/deployments.md
 - https://alien.dev/docs/production/logs.md
 - https://alien.dev/docs/production/rollouts.md
-- https://alien.dev/docs/production/troubleshooting.md
 - https://alien.dev/docs/production/remote-operator.md
 - CLI reference: https://alien.dev/docs/reference/cli/alien.md
 
@@ -33,24 +35,38 @@ Run `alien <command> --help` before using a flag you haven't seen in this sessio
    directory is linked, and `--workspace` when the CLI is logged into several.
 2. **Read first.** Always run `deployments get`, then `deployments events`, then `logs`, before
    anything else.
-3. **Ask before you change anything.** Retry, release, promote, pin, delete, and debug sessions change
-   a customer's environment or wake their admin. Say what the command does and who it affects, then
-   wait for the user's go-ahead.
+3. **Ask before you change anything.** Retry, release, promote, pin, delete, and debug sessions
+   change a customer's environment or wake their admin. Say what the command does and who it
+   affects, then wait for the user's go-ahead.
 4. **Never work around an access approval.** If a command needs an access request, create it and
    wait. Don't look for credentials another way.
-5. **Status is the last report.** Running means the last update finished. It doesn't mean the app is
-   healthy or on the newest release. Confirm with heartbeat age, events, and logs.
+5. **Status is the last report.** `running` means the last update finished. It doesn't mean the
+   app is healthy or on the newest release. Confirm with heartbeat age, events, and logs.
 6. **Fix the first failure.** Resources marked interrupted failed because another one did.
 7. **Wrappers hide causes.** "Replicas did not become healthy", "Polling timed out", and
    `CrashLoopBackOff` mean: read the logs.
-8. **Don't retry what retry can't fix.** A release that changes setup-owned resources or permissions
-   waits for the admin to rerun setup. Retrying won't move it.
-9. **Fix forward.** Fix the code and release again. Use `pin` to hold one deployment, or promote the
-   previous release to roll back a channel.
+8. **Don't retry what retry can't fix.** A release that changes frozen resources or permissions
+   waits for the customer's admin to rerun initial setup. Retrying won't move it. A new release
+   fixes code, not the environment.
+9. **Fix forward.** Fix the code and release again. Use `pin` to hold one deployment, or promote
+   the previous release to roll back a channel.
 10. **Parse errors mean an old CLI.** Run `alien upgrade`, then repeat the command.
 11. **No customer names** in anything you write down. Use `customer-1`.
 
-## Start
+## Investigation
+
+Copy this checklist and tick it off:
+
+```text
+- [ ] 1. Read: deployments get, deployments events, logs
+- [ ] 2. Pick the branch in the decision tree
+- [ ] 3. Run the branch's playbook (read-only commands first)
+- [ ] 4. Name the first failure and who acts
+- [ ] 5. Propose the next command; wait for the go-ahead before any change
+- [ ] 6. After a change, verify the rollout; if it still fails, go back to step 1
+```
+
+Start with:
 
 ```bash
 alien deployments get <dep>
@@ -59,7 +75,7 @@ alien logs --deployment <dep> --level error --since 1h
 ```
 
 Read `get` in this order: status, the **Failed resources** lines, then the **Deployment updates**
-table (**Reasons**, **Action required**). Then pick a branch below.
+table (**Reasons**, **Action required**).
 
 ## Decision tree
 
@@ -70,15 +86,16 @@ alien deployments get <dep>
 │   ├─ Failed resources names X, others interrupted → read X's error
 │   │   ├─ wrapper (replicas, polling, crash loop) → logs, then logs --system
 │   │   │     → fix code → alien release → retry → wait
-│   │   ├─ cloud permission, quota, or principal error → the admin fixes it → retry
-│   │   └─ setup-owned resource → the admin reruns setup (it resumes)
-│   └─ no failed resource shown → get --json and walk stackState errors
+│   │   ├─ cloud permission, quota, or principal error → the customer's admin fixes it → retry
+│   │   └─ initial-setup-failed → the customer's admin reruns initial setup (it resumes)
+│   └─ no failed resource shown → get --json and walk each resource's error
 │
 ├─ Running, but current release ≠ desired release
 │   ├─ Action required mentions setup, a frozen resource, or permissions
-│   │     → the admin reruns setup. Don't retry.
+│   │     → the customer's admin reruns initial setup. Don't retry.
 │   ├─ Needs inputs → provide the inputs
 │   ├─ Pinned → unpin, if that's intended
+│   ├─ Update not confirmed → retry, or Check again on the deployment page
 │   └─ Queued or updating → deployments wait --for ready; read events
 │
 ├─ Stuck (pending, updating, initial-setup, provisioning for too long)
@@ -86,26 +103,28 @@ alien deployments get <dep>
 │   ├─ get --json: a resource can be retrying while the top status looks fine
 │   └─ retry refuses → say why, and who acts next
 │
+├─ Waiting for secrets → the customer writes the secret into their own secret store
+│
+├─ Customer key unavailable → the customer restores access to their key; it recovers on its own
+│
 ├─ Running, users see errors
 │   └─ logs by time window, count matches, logs --system to rule out the platform,
 │       commands invoke to read app state → fix → release → verify the rollout
 │
-├─ Not reporting
+├─ Not reporting (last heartbeat older than 5 minutes)
 │   └─ deployments machines → resources → logs --system
 │       fresh machine heartbeats → reporting problem, not an outage
-│       no heartbeats → the environment or its outbound network is down: the admin
+│       no heartbeats → the environment or its outbound network is down: the customer's admin
 │
-├─ No logs → telemetry off? Kubernetes log collection not enabled? deployment deleted?
+├─ No logs → telemetry off? not connected to a manager? Kubernetes log scope? deleted?
 │
 ├─ Need to look inside → commands invoke → debug with an access request → debug exec
 │
-├─ Delete stuck or teardown-required → the admin removes setup;
+├─ Delete stuck or teardown-required → the customer's admin removes the setup stack;
 │   resources already gone → delete --force <name>; check for leftovers
 │
 └─ CLI error → references/errors.md
 ```
-
-Each branch has a command sequence in `references/playbooks.md`.
 
 ## Report
 
@@ -119,5 +138,7 @@ End every investigation with:
 
 ## References
 
-- `references/playbooks.md`: command sequences for each branch.
-- `references/errors.md`: failure messages and CLI errors, with their causes and fixes.
+- [references/playbooks.md](references/playbooks.md): the command sequence for each branch of the
+  decision tree. Load once you have picked a branch.
+- [references/errors.md](references/errors.md): failure messages and CLI errors, with causes and
+  fixes. Load when a command or a status shows an error message you need to interpret.

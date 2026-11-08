@@ -6,6 +6,13 @@ Your product's backend talks to Alien. Alien does not host your control plane. D
 `deployment-ux/remove-a-deployment.md`, `deployment-ux/branding.md`,
 `reference/sdk/platform-api.md`, and the REST reference under `reference/api`.
 
+## Contents
+
+- Choose how customers install
+- Backend code
+- Rules
+- Map statuses to product states
+
 ## Choose how customers install
 
 1. **Hosted setup portal (default).** Your backend creates a setup link and your settings page

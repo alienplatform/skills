@@ -28,7 +28,7 @@ Then list, separately:
 - **Calls between components** that would cross the boundary if the two ended up on different
   sides. Note the fields each carries.
 - **Third-party services** each component calls (auth provider, Stripe, analytics, email,
-  LLM). These stay in the vendor's cloud unless the requirement names them.
+  LLM). These stay in your cloud unless the requirement names them.
 - **State that must survive an upgrade** (running jobs, sessions, VMs). It constrains the
   workload model later.
 
@@ -36,7 +36,7 @@ Then list, separately:
 
 Defaults for the control plane / data plane split, when the requirement is about customer data.
 They are not answers: the buyer's requirement and security review override them. For a
-private-systems or latency requirement, usually only the connector or the cache moves.
+private-network or latency requirement, usually only the connector or the cache moves.
 
 | Component | Usually | Why |
 |---|---|---|
@@ -49,7 +49,7 @@ private-systems or latency requirement, usually only the connector or the cache 
 | Search indexes, caches, embeddings over customer data | Data plane | Derived from customer data |
 | Workers that read or transform customer data | Data plane | They hold the data in memory |
 | Connectors to the customer's internal systems | Data plane | Reachable only from inside their network |
-| LLM calls with customer content in the prompt | Data plane, or the customer's model account | See local models |
+| LLM calls with customer content in the prompt | Data plane, or the customer's model account | See `guide/local-ai-models` |
 | Webhooks and event delivery | Control plane with thin events (IDs only), unless payloads are content | Delivery infrastructure is costly to move |
 
 ## Signals to note

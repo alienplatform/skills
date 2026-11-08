@@ -7,7 +7,7 @@ the rest of your product stays SaaS.
 | Skill | Use it to |
 |---|---|
 | [`alien-architecture`](skills/alien-architecture/SKILL.md) | Decide what to run outside your cloud. Turns a customer requirement ("our data can't leave our account", "our cluster isn't reachable from the internet", "checks must not add latency") into 2-3 candidates, from only the customer's key or bucket to an agent, a cache, the part that touches the data, or the whole product, recommends one, and writes `docs/alien-architecture.md` for approval. No code changes. |
-| [`alien-integration`](skills/alien-integration/SKILL.md) | Implement the approved split, or bring an existing Helm chart or compose file to Alien: `alien.ts`, stateful services such as Redis, ClickHouse, and Temporal, data-plane code with `@alienplatform/sdk`, local runs with `alien dev`, tests, CI releases, setup links and status in your backend, the customer runbook, and validation in a real cloud. |
+| [`alien-integration`](skills/alien-integration/SKILL.md) | Implement the approved split, or bring an existing install (Helm chart, Compose file, ECS, Terraform) to Alien: `alien.ts`, stateful services such as Redis, ClickHouse, and Temporal, data-plane code with `@alienplatform/sdk`, local runs with `alien dev`, tests, CI releases, setup links and status in your backend, the customer runbook, and validation in a real cloud. |
 | [`alien-deploy`](skills/alien-deploy/SKILL.md) | Add customer deployment to your product: setup links, the deployment portal or your own settings page, branding, status, resizing, removal, and a production checklist, verified with a real install in a test account. |
 | [`alien-operate`](skills/alien-operate/SKILL.md) | Investigate running deployments with the `alien` CLI: failed or stuck installs and updates, releases that didn't arrive, missing reports, errors in a time window, debug sessions, and removal. Reads first and asks before changing anything. |
 
@@ -64,7 +64,8 @@ skills/
     references/        inventory, what to run remotely, boundary checks, decision record template
   alien-integration/
     SKILL.md
-    references/        profiling, existing apps (Helm, compose), stateful services,
+    references/        profiling, existing installs (shared steps, plus one entry file
+                       each for Helm, Compose, ECS, and Terraform), stateful services,
                        alien.ts, reaching a deployment, local dev and tests, releases and
                        CI, control-plane integration, moving existing customers,
                        standalone paths, patterns, customer runbook, validation

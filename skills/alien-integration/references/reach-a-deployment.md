@@ -4,6 +4,15 @@ Implement exactly the rows in the decision record's "what crosses" table. Docs:
 `https://alien.dev/docs/guide/design/connect-your-backend.md`, `guide/commands.md`,
 `guide/remote-bindings.md`, `guide/networking.md`, `guide/inputs-and-secrets.md`.
 
+## Contents
+
+- Deployment to your backend
+- Commands
+- Remote bindings
+- Browser to the deployment
+- Uploads
+- Checks before moving on
+
 Your backend and each deployment talk in three directions:
 
 | Direction | Mechanism | Carries |

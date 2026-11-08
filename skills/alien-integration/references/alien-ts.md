@@ -5,11 +5,22 @@
 `guide/frozen-and-live.md`, `guide/inputs-and-secrets.md`, `guide/permissions.md`, and
 `infrastructure/<type>.md` for each resource.
 
+## Contents
+
+- Example
+- Readability rules
+- Frozen or live
+- Inputs
+- Compute choice
+- Local and cloud differences
+- Permissions
+- Before moving on
+
 ## Example
 
 A document-processing data plane: customer documents and job state stay in the customer's
-account, and the control plane calls the processor with commands. Type-checked against
-`@alienplatform/core` 3.3.41.
+account, and the control plane calls the processor with commands. Check each call against the
+types of the `@alienplatform/core` version you install.
 
 ```ts title="alien.ts"
 import * as alien from "@alienplatform/core"
@@ -186,7 +197,8 @@ providers). Clear local-only settings in the cloud. An emulator endpoint variabl
 
 ## Before moving on
 
-Run `npx tsc --noEmit` on `alien.ts` and the workload code. Render the customer's setup template
+Run `npx tsc --noEmit` on `alien.ts` and the workload code. `@alienplatform/core` is ESM only:
+the package that holds `alien.ts` needs `"type": "module"`. Render the customer's setup template
 and lint it, which needs no cloud account and catches values the cloud rejects (an unsupported
 database version, for example):
 

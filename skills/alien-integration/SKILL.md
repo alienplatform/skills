@@ -1,6 +1,6 @@
 ---
 name: alien-integration
-description: Implement an approved Alien design end to end in a repository, whether it deploys an agent, a cache, the part of the product that touches customer data (a control plane / data plane split), or the whole product. Covers installing the alien CLI, writing a readable alien.ts, handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from your backend, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm chart, compose file, Terraform, or Ansible deploy onto Alien, with stateful dependencies like Redis, ClickHouse, or Temporal.
+description: Implements an approved Alien design in a repository, from an agent or a cache to the part of the product that touches customer data or the whole product. Covers a readable alien.ts, workload code with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings, local runs with alien dev, tests, releases from CI, setup links and status in the vendor backend, the customer runbook, and validation in a real cloud. Also converts an existing install (Helm chart, Kustomize, Docker Compose, ECS task definitions, Terraform, Ansible) and its stateful dependencies such as Postgres, Redis, ClickHouse, or Temporal. Use after the alien-architecture skill or when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move an existing deploy onto Alien.
 license: Apache-2.0
 compatibility: Requires Node.js 20+, Docker for alien dev, and network access to alien.dev. Cloud validation needs an AWS, Google Cloud, or Azure account the user controls.
 metadata:
@@ -44,7 +44,21 @@ Stop and ask the user before each of these. They are visible to customers or cos
 
 ## Phases
 
-Load each reference when you reach its phase.
+Load each reference when you reach its phase. Copy this checklist into your work notes and check
+off phases as you finish them. Skip phases the decision record doesn't need.
+
+```text
+- [ ] 1. Profile
+- [ ] 2. Install and scaffold (2b existing install, 2c stateful dependencies)
+- [ ] 3. alien.ts written, type-checked, rendered, and linted
+- [ ] 4. Workload code
+- [ ] 5. Backend reaches the deployment
+- [ ] 6. Local run and tests pass
+- [ ] 7. Release from CI (approval gate)
+- [ ] 8. Vendor control plane (8b existing customers)
+- [ ] 9-11. Standalone paths, patterns, runbook as needed
+- [ ] 12. Validation ladder passed (approval gate for cloud steps)
+```
 
 ### 1. Profile → `references/profiling.md`
 
@@ -63,13 +77,23 @@ Inside an existing repository, `alien init` writes to an `alien/` directory by d
 also write `alien.ts` by hand. Docker must be running for `alien dev`. Keep the integration in its own directory or workspace
 package with its own lockfile when the repo's dependency graph is sensitive.
 
-### 2b. Existing chart or images → `references/existing-app.md`
+### 2b. An existing install → `references/existing-app.md`
 
-If the repo already ships container images with a Helm chart or compose file and the whole
-product installs remotely, follow that file before writing `alien.ts`: render the chart into a
-plan file, audit every object, check every image, show the mapping, then convert Jobs, sidecars,
-and config files as it describes. A chart that looks unsupported at first reading almost never
-is.
+If the product already installs somewhere as container images and the decision record moves the
+whole product, start from what the repository has:
+
+| The repository has | Read first |
+|---|---|
+| `Chart.yaml`, `kustomization.yaml`, or Kubernetes manifests | `references/from-helm.md` |
+| `docker-compose.yml` or `compose.yaml` | `references/from-compose.md` |
+| ECS task definitions (`aws_ecs_task_definition`, `taskdef.json`, `copilot/`) | `references/from-ecs.md` |
+| Terraform, CDK, or Pulumi that creates databases, buckets, or queues | `references/from-terraform.md` |
+| Ansible, shell scripts over SSH, or systemd units | `references/profiling.md`, then host daemons in `references/patterns.md` |
+
+Each file says how to read that source and how its objects map. Then follow the shared steps in
+`existing-app.md`: render, plan, audit, inspect images, and convert. Most repositories have more
+than one. Terraform that also runs ECS or EKS: read `from-terraform.md` and the workload file.
+A chart plus a Compose file for local runs: convert the one customers install today.
 
 ### 2c. Stateful dependencies → `references/stateful-services.md`
 

@@ -1,5 +1,15 @@
 # Questions to ask before proposing anything
 
+## Contents
+
+- Before asking
+- Q1. Why it runs outside your cloud (always)
+- Q2. Where it runs (always)
+- Q3. What may leave (sensitive data only)
+- Q4. Which kinds of data are sensitive (sensitive data only)
+- Q5. What you need across installations (updates and operations, or everything)
+- Q6. How much the product can change (data plane or whole product)
+
 Ask once, in one batch of three to five questions. Every question is multiple choice and ends with
 **Other**. Use the host's structured question tool when there is one (for example
 `AskUserQuestion`); otherwise send a numbered list the user can answer with letters.
@@ -28,7 +38,7 @@ Multi-select. Always ask.
 - D. **Latency**: their app calls you on its hot path and needs fast answers, or answers while your
   service is down.
 - E. **None of these.** You already ship it (Helm chart, Terraform, installer) and need updates,
-  monitoring, and debugging across installs.
+  monitoring, and debugging across installations.
 - F. **The customer requires everything in their environment** (on-prem, air-gapped, or "no vendor
   connection").
 - Other
@@ -47,7 +57,7 @@ Multi-select. Always ask.
 - E. Not decided. Plan for the most likely and keep the others possible.
 - Other
 
-This decides push or pull, which resources are frozen, and which compute fits.
+The answer decides push or pull, which resources are frozen, and which compute fits.
 
 ## Q3. What may leave the customer's environment?
 
@@ -84,14 +94,14 @@ Multi-select. Only when Q1 includes A. This is the first pass of the worksheet i
 When unsure, treat A, B, C, and E as sensitive, F as metadata, and D as a judgment call for the
 buyer.
 
-## Q5. What do you need across installs?
+## Q5. What do you need across installations?
 
-Multi-select. Only when Q1 is just E, or includes F.
+Multi-select. Only when Q1 is only E, or includes F.
 
 - A. Automatic updates on every release
-- B. Health, versions, and logs from every install in one place
+- B. Health, versions, and logs from every installation in one place
 - C. Approved commands and debugging without SSH, VPN, or inbound ports
-- D. A one-command install for the customer (setup link, Helm, CloudFormation, Terraform)
+- D. A one-command initial setup for the customer (setup link, Helm, CloudFormation, Terraform)
 - E. The whole product in their environment, with no hosted part
 - Other
 

@@ -5,6 +5,16 @@ broker (Redis, RabbitMQ), an analytics store (ClickHouse), or a durable-executio
 (Temporal, Restate, Inngest). Docs: `infrastructure`, `infrastructure/container`,
 `infrastructure/container/behavior`, `infrastructure/postgres/api`, `reference/environment-variables`.
 
+## Contents
+
+- Choose the home first
+- A service as a container
+- Setup steps
+- Health checks prove readiness
+- TLS to managed databases
+- Durable execution
+- Ports
+
 These services cause most of the failures in a whole-product integration. The service itself
 rarely fails. What fails is the glue you write around it: setup steps, TLS settings, passwords,
 and a launch script that hides a dead process.
@@ -16,7 +26,8 @@ and a launch script that hides a dead process.
    container you operate. Bundled Postgres becomes `alien.Postgres`.
 2. **A hosted service, for a durable-execution engine that supports outbound-only workers.** See
    [Durable execution](#durable-execution).
-3. **A container with a volume**, for everything else. The stock image, unchanged.
+3. **A container with a volume**, for everything else. The stock image, or a thin image built on
+   it that adds only a readiness endpoint (see [Health checks prove readiness](#health-checks-prove-readiness)).
 
 Record the choice and the reason in the decision record. Don't rewrite the product to fit a
 different store (for example, Redis lists onto `Kv`) unless the decision record says to.
