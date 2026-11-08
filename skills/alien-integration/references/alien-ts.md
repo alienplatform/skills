@@ -186,4 +186,14 @@ providers). Clear local-only settings in the cloud. An emulator endpoint variabl
 
 ## Before moving on
 
-Run `npx tsc --noEmit` on `alien.ts` and the workload code. Then run `alien dev`.
+Run `npx tsc --noEmit` on `alien.ts` and the workload code. Render the customer's setup template
+and lint it, which needs no cloud account and catches values the cloud rejects (an unsupported
+database version, for example):
+
+```bash
+alien render --format cloudformation --stack . > template.yaml
+cfn-lint template.yaml
+```
+
+Linting the real template is a check of what the customer will run, not a test that a template
+contains a key. Then run `alien dev`.

@@ -105,6 +105,7 @@ There is no Job resource. Pick one home per step:
 | Several steps in a fixed order (compose's one-shots) | A prefix of one single-replica service's command, in compose order, each idempotent |
 | Roles, databases, extensions on `alien.Postgres` | A setup step that links the database, or a command-enabled setup container |
 | Steps that belong to one dependency (a Temporal namespace) | That dependency's own launch script |
+| Steps other services must wait for, with no backend to call a command | A setup container that runs them, then passes its health check; the services that depend on it link it |
 
 - Make every step idempotent. Use `IF NOT EXISTS`, and treat "already exists" as success only for
   the object you meant to create.
@@ -124,8 +125,12 @@ launch script starts another process, gets a health check that passes only when 
 its job:
 
 - Use an endpoint that needs the full stack: ClickHouse `/ping`, a Temporal namespace lookup on
-  the HTTP API, the product's own readiness route. A health check can probe a port the container
-  doesn't declare.
+  the HTTP API, the product's own readiness route. The health-check port doesn't need a
+  `.port()` declaration.
+- Health checks are HTTP. For a service with no HTTP endpoint (Redis, a queue worker), the
+  launcher serves a small readiness endpoint that answers 200 only after a real check
+  (`redis-cli ping`, the worker connected to its server). If you can't wrap the process, record
+  the missing check as an open question.
 - Set `failureThreshold` from a measured cold start, including migrations.
 - A launch script that starts a server in the background must exit when the server exits.
   Otherwise the container shows as running while nothing serves:
@@ -185,7 +190,10 @@ mode's maturity for your SDK language before choosing it.
   the setup step. Its password is a generated input shared by the setup step and the Temporal
   container, so Temporal never needs the database admin's secret.
 - Build a thin image from `temporalio/server` with `jq`, `nc`, the dynamic config file, and the
-  schema directory copied from the `admin-tools` image.
+  schema directory copied from the `admin-tools` image. Don't use `auto-setup`: it creates
+  databases with rights a managed Postgres admin lacks, and new versions aren't published. The
+  Temporal images are Alpine; if you need the SDK launcher, copy the static binaries
+  (`temporal-server`, `temporal-sql-tool`) onto a Debian base instead.
 - The launch script reads the host and port from the database binding (`ALIEN_DB_BINDING`, JSON
   tagged by `service`; see `reference/environment-variables`), then:
   1. `temporal-sql-tool --plugin postgres12 --endpoint <host> --port <port> --user temporal
@@ -194,8 +202,11 @@ mode's maturity for your SDK language before choosing it.
      With TLS add `--tls`; the password goes in `SQL_PASSWORD`.
   2. Starts the server with `DB=postgres12`, `POSTGRES_SEEDS`, `DB_PORT`, `POSTGRES_USER`,
      `POSTGRES_PWD`, `DBNAME`, `VISIBILITY_DBNAME`, `BIND_ON_IP=0.0.0.0`,
-     `DYNAMIC_CONFIG_FILE_PATH`, and for TLS `SQL_TLS_ENABLED=true` plus `SQL_CA` (or
-     `SQL_HOST_VERIFICATION=false`). The server ignores `POSTGRES_TLS_*` names.
+     `DYNAMIC_CONFIG_FILE_PATH`, and for TLS `SQL_TLS_ENABLED=true` plus `SQL_CA`, or
+     `SQL_HOST_VERIFICATION=false`. The server ignores `POSTGRES_TLS_*` names. The binding JSON
+     has no CA; the CA comes from the SDK's `connection()`, which also reads the admin password
+     and so needs the database grant. Choose between verifying the host (SDK plus grant) and
+     encrypting without verification (no grant), and record the choice.
   3. Waits for port 7233 while checking the server is alive, creates the namespace against
      `127.0.0.1:7233`, then waits on the server.
 - Health check: `GET /api/v1/namespaces/<namespace>` on the HTTP port (7243). It passes only once

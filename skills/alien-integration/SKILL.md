@@ -19,9 +19,10 @@ code itself: how is this deployed today, and where does each process get its con
 1. **Read the decision record.** `docs/alien-architecture.md` names the option, what runs where,
    and what crosses the boundary. If it is missing or not approved, run the `alien-architecture`
    skill first. For a standalone path (only customer-managed keys, only local models, only Remote
-   Operator), a short record is enough.
+   Operator), or when the user's request already names the option, a short record is enough.
 2. **Read the docs for what you will build.** Fetch pages as Markdown from
-   `https://alien.dev/docs/<path>.md`; the index is `https://alien.dev/llms.txt`. Start with
+   `https://alien.dev/docs/<path>.md` (follow redirects: `curl -sL`); the index is
+   `https://alien.dev/llms.txt`. Start with
    `guide/quickstart`, `guide/stacks`, `guide/frozen-and-live`, `guide/inputs-and-secrets`, and the
    pages for each resource you use under `infrastructure/`. Docs win over this skill and
    over memory when they differ.

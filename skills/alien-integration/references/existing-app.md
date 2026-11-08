@@ -35,14 +35,18 @@ Record which one and why in the decision record.
    the rendered objects and writes one entry per service: image, command and args, env, ports,
    mounts, and the secrets each container references. `alien.ts` reads the plan for those values
    and stays hand-written for everything a reviewer judges: sizing, ports, health checks,
-   permissions, links. The script fails on an object kind or field it doesn't understand. When
-   the chart changes, you rerun the script instead of re-reading YAML.
+   permissions, links. The plan records which secret each container references, never a secret's
+   value. The script fails on an object kind or field it doesn't understand. When the chart
+   changes, you rerun the script instead of re-reading YAML.
 3. **Audit every object.** A table in the PR or decision record with one row per rendered object
    (and per Job, hook, CronJob, sidecar, and init container): ported, replaced by what, or dropped
    and why. Nothing is dropped silently.
-4. **Check every image.** `docker pull` each one with the vendor's credentials. Record OS, libc
-   (glibc or musl), architecture, entrypoint, user ID, and which paths it writes to. Show the
-   inventory and the mapping to the user before writing `alien.ts`.
+4. **Check every image.** `docker pull` each one with the vendor's credentials, and
+   `docker inspect` it. Record OS, libc (glibc or musl), architecture, `Entrypoint` and `Cmd`,
+   user ID, and which paths it writes to. A public image that fails to pull usually has a wrong
+   tag. If you can't pull an image, mark each of those facts unverified and list them as open
+   questions. Show the inventory and the mapping to the user before writing `alien.ts`; in a run
+   with no user to ask, write them to the mapping document first.
 5. **One named, commented `alien.Container` per service.** `.code({ type: "image", image })`,
    `.port()`, `.cpu()`, `.memory()`, `.replicas()`. Never generate workloads from a list. Name each
    container after the chart's Service, so `http://api:8000` keeps resolving.

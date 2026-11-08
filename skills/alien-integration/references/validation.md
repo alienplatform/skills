@@ -11,6 +11,7 @@ in every account class you will touch before building anything.
 
 ## 1. Local
 
+- `alien render` plus a linter for each setup format you ship (see `alien-ts.md`).
 - `alien dev`, then the product's primary flow through commands or the endpoint.
 - Two local deployments (`alien dev deploy --name customer-2 --platform local`) to check isolation.
 - `@alienplatform/testing` suite green.

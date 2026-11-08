@@ -14,6 +14,9 @@ alien dev
   watch files. Stop it (`Ctrl+C`) and start it again to pick up code changes.
 - The first deployment is `default` in the local group `local-dev`: address it as
   `local-dev/default`.
+- Check that every secret input reaches its containers. If a generated secret is unset locally,
+  pass it with `--secret <id>=<value>` and report it. Deployer secrets go in with
+  `alien dev vault set deployer-secrets <id> --stdin`.
 - Storage is a local directory; other resources run locally.
 
 In a second terminal:
