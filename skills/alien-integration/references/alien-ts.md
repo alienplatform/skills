@@ -161,11 +161,24 @@ frozen resources up front.
 | One process per host, host access, nested virtualization | `Daemon` on a `ComputeCluster` or Machines |
 
 On GCP and Azure a `Worker` listens on port 8080. AWS Workers build for arm64 by default; ship a
-`Container` for amd64-only images. Declared ports are effectively immutable: choose them once.
+`Container` for amd64-only images. Changing a container's ports or public endpoints replaces it,
+and on a running deployment the update can be refused: choose them in the first release.
+
+For dependencies the product doesn't own (Redis, ClickHouse, a durable-execution engine) and for
+setup steps, see `stateful-services.md`.
+
+## Local and cloud differences
+
+Keep them few and visible: one `const local = ...` switch near the top, used where a resource
+or option exists only in the cloud (a customer-managed `Key`, sandbox lifetimes, some AI
+providers). Clear local-only settings in the cloud. An emulator endpoint variable
+(`AWS_ENDPOINT_URL`) left in the environment sends real cloud calls to localhost.
 
 ## Permissions
 
-- One profile per workload, granting named resources only.
+- One profile per workload, granting named resources only. A profile is a cloud identity:
+  workloads that share a profile share access. Give the workload that holds customer keys or
+  credentials its own profile, and services that call no cloud API an empty one.
 - Common permission sets: `storage/data-read`, `storage/data-write`, `kv/data-read`,
   `kv/data-write`, `queue/data-read`, `queue/data-write`. Check `reference/permissions` for the
   full list and what each grants.

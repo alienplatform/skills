@@ -84,6 +84,11 @@ jobs:
         run: alien release --project docproc --channel beta
 ```
 
+Image size matters: every release pushes each image to each platform's registry, and a large
+image slows every cycle. Check layer sizes (`docker history`) before the first cloud release. If a
+push fails with HTTP 413, split the largest layer (for example, install heavy packages in
+separate layers) and report it.
+
 Before pushing:
 
 - Check every existing workflow's triggers. A push to a customer-facing branch can be a release.

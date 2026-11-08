@@ -29,6 +29,26 @@ in every account class you will touch before building anything.
   product `/health` reports the expected version → real flow works. Check each link.
 - Platforms: say which were defined, built, and qualified in a real deployment. Do not merge
   these into one "supported".
+- A cloud cycle (release, update, check) takes 10 minutes or more, and large images add more.
+  Reproduce each container's startup locally first, including the cloud's rules (for example a
+  database that only accepts TLS), and bundle fixes into one release.
+
+### Prove the promises
+
+Each claim in the decision record gets a test that would fail if the claim were false.
+
+- **Customer-managed key.** Disable the key in the customer's key service. A real write fails
+  (a storage upload, a database write) with the provider's disabled-key error. Re-enable it. The
+  next write succeeds and data written before is still readable. Note which stores the key does
+  not cover (machine root disks, for example) in the runbook.
+- **Customer's models.** Call every model the product uses through the deployment, including
+  helper models, in the customer's account. Unset any provider key the client could fall back to.
+- **Data stays.** Put unique marker strings into test content. Search for them in the customer's
+  stores (they are there) and in your control plane's database, logs, queues, and analytics (they
+  are not).
+- **Isolation.** Two test customers; one can't read the other's data through any endpoint.
+- **Stateful data.** Write data, update to a new release, restart each stateful container, and
+  read the data back.
 
 ## 3. A second release while the first is live
 
@@ -37,6 +57,9 @@ in every account class you will touch before building anything.
   different paths.
 - Confirm the new version is served (a version endpoint or a command returning the build ID) and
   nothing that must survive was lost.
+- Some changes (container ports, for example) are refused only when the update runs, not at
+  release time. A deployment in `update-failed` recovers with a newer release, so test risky
+  changes on a test deployment first.
 - If the design changes a frozen resource or permissions later, confirm the release is held and
   the portal asks the admin to rerun setup.
 - Re-test the setup link you already sent, not only a fresh one.
@@ -55,5 +78,12 @@ in every account class you will touch before building anything.
 - Rule out stale local builds, stale keys, laptop sleep, and provider outages before blaming the
   product or Alien.
 - Keep per-run artifacts (deploy output, status snapshots, command results).
+- Read the deployment's logs with Alien's system components included
+  (`alien logs --deployment <id> --system`) before logging in to a host. Container start failures
+  and probe results show there.
+- Keep a gap register: one entry per suspected Alien gap with evidence, the workaround, and its
+  status. Recheck each entry against the current release before reporting it; many close.
+- Record walkthrough videos from a normal network. A proxy that intercepts TLS breaks WebSockets
+  and browser certificate trust.
 - Classify each blocker (integration config, environment, Alien defect, app defect) as described
   in `SKILL.md`.

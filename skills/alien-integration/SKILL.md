@@ -1,11 +1,11 @@
 ---
 name: alien-integration
-description: Implement an approved Alien design end to end in a repository, whether it deploys an agent, a cache, the part of the product that touches customer data (a control plane / data plane split), or the whole product. Covers installing the alien CLI, writing a readable alien.ts, handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from your backend, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm, Terraform, or Ansible deploy flow onto Alien.
+description: Implement an approved Alien design end to end in a repository, whether it deploys an agent, a cache, the part of the product that touches customer data (a control plane / data plane split), or the whole product. Covers installing the alien CLI, writing a readable alien.ts, handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from your backend, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm chart, compose file, Terraform, or Ansible deploy onto Alien, with stateful dependencies like Redis, ClickHouse, or Temporal.
 license: Apache-2.0
 compatibility: Requires Node.js 20+, Docker for alien dev, and network access to alien.dev. Cloud validation needs an AWS, Google Cloud, or Azure account the user controls.
 metadata:
   author: alienplatform
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Alien integration
@@ -65,9 +65,16 @@ package with its own lockfile when the repo's dependency graph is sensitive.
 ### 2b. Existing chart or images → `references/existing-app.md`
 
 If the repo already ships container images with a Helm chart or compose file and the whole
-product installs remotely, follow that file before writing `alien.ts`: render the chart, check
-every image, show the mapping, then convert Jobs, sidecars, and config files as it describes. A
-chart that looks unsupported at first reading almost never is.
+product installs remotely, follow that file before writing `alien.ts`: render the chart into a
+plan file, audit every object, check every image, show the mapping, then convert Jobs, sidecars,
+and config files as it describes. A chart that looks unsupported at first reading almost never
+is.
+
+### 2c. Stateful dependencies → `references/stateful-services.md`
+
+For Redis, RabbitMQ, ClickHouse, a durable-execution engine (Temporal, Restate, Inngest), and the
+one-shot setup steps around them: where each runs, health checks that prove readiness, TLS to
+managed databases, and what leaves the customer's account with a hosted engine.
 
 ### 3. Write `alien.ts` → `references/alien-ts.md`
 
@@ -115,6 +122,10 @@ Your backend creates setup links by `externalId`, polls deployment status, reads
 owns product activation. Use `@alienplatform/platform-api`. The workspace API key never reaches a
 browser.
 
+### 8b. Existing customers → `references/move-existing-customers.md`
+
+When hosted customers move into deployments: placements, the move recipe, and rehearsals.
+
 ### 9. Standalone paths → `references/standalone-paths.md`
 
 Customer-managed keys, local models, Remote Operator on an existing install, single-tenant,
@@ -152,12 +163,14 @@ a provider outage.
 ## Rules
 
 1. Prefer existing primitives (`Postgres`, `Vault`, `Kv`, setup containers, commands) over
-   adapters or new infrastructure. If a primitive is missing, say so; do not build a parallel
-   system.
+   adapters or new infrastructure. Try a primitive in `alien dev` before ruling it out. If one is
+   missing, report it; do not build a parallel installer, and do not edit these skills to fit a
+   workaround.
 2. Inventory every effect of the legacy deploy path before replacing any of it.
 3. Never fall back across the trust boundary. A lookup error refuses the request.
 4. Model infrastructure health, runtime activation, and product readiness separately. Running is
-   not usable.
+   not usable. Every long-lived container gets a health check that passes only when it does its
+   job, and a launch script exits when the process it started exits.
 5. If a supervisor adopts a running process, include the rendered config in its identity (hash
    it). Otherwise config-only releases never apply.
 6. Pin CPU architecture at artifact boundaries. AWS Workers build for arm64 by default; vendor
@@ -172,6 +185,10 @@ a provider outage.
     vocabulary out of the product's customer-facing text.
 11. Never commit credentials, private plans, or evidence screenshots to the repository.
 12. No customer or prospect names in code, commits, or docs; use `customer-1`.
+13. One module translates Alien bindings into the settings the product already reads (env vars,
+    files). No other product code reads Alien variables.
+14. Every program reads its own setting names. When an image needs TLS or a password, look up
+    the names in that image's config template, and prove the connection from the real process.
 
 ## Deliver
 
