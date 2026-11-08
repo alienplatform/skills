@@ -2,8 +2,8 @@
 
 Use this when the repository already ships the product as container images with a Helm chart or
 a `docker-compose.yml`, and the decision record says the whole product (or most of it) installs
-in the customer's environment. Docs: `build/existing-app`, `container`, `build/inputs-and-secrets`,
-`deploy/kubernetes`.
+in the customer's environment. Docs: `guide/existing-app`, `infrastructure/container`, `guide/inputs-and-secrets`,
+`infrastructure/platforms/kubernetes`.
 
 A chart uses Kubernetes mechanisms with no one-to-one Alien resource (Jobs, CronJobs, init
 containers, sidecars, mounted ConfigMaps, generated Secrets). A first reading of the resource

@@ -21,14 +21,14 @@ setup in their own account with their own credentials.
 
 Fetch these as Markdown. They are the source of truth for every API field.
 
-- https://alien.dev/docs/integrate.md
-- https://alien.dev/docs/integrate/setup-links.md
-- https://alien.dev/docs/integrate/byoc-settings.md (only when building your own launch)
-- https://alien.dev/docs/integrate/deployment-status.md
-- https://alien.dev/docs/integrate/sizes-and-networks.md
-- https://alien.dev/docs/integrate/remove-a-deployment.md
-- https://alien.dev/docs/integrate/white-label.md
-- https://alien.dev/docs/deploy/deployment-portal.md
+- https://alien.dev/docs/deployment-ux/deploy-button.md
+- https://alien.dev/docs/deployment-ux/setup-links.md
+- https://alien.dev/docs/deployment-ux/setup-screen.md (only when building your own launch)
+- https://alien.dev/docs/deployment-ux/deployment-progress.md
+- https://alien.dev/docs/deployment-ux/sizes-and-networks.md
+- https://alien.dev/docs/deployment-ux/remove-a-deployment.md
+- https://alien.dev/docs/deployment-ux/branding.md
+- https://alien.dev/docs/deployment-ux/deployment-portal.md
 - REST reference: https://alien.dev/docs/reference/api and the TypeScript client at
   https://alien.dev/docs/reference/sdk/platform-api.md
 

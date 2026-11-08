@@ -18,11 +18,11 @@ the first thing that failed, and names who fixes it: you (code or release), the 
 
 Fetch these as Markdown when you need detail:
 
-- https://alien.dev/docs/operate/deployments.md
-- https://alien.dev/docs/operate/logs.md
-- https://alien.dev/docs/operate/rollouts.md
-- https://alien.dev/docs/operate/troubleshooting.md
-- https://alien.dev/docs/operate/remote-operator.md
+- https://alien.dev/docs/production/deployments.md
+- https://alien.dev/docs/production/logs.md
+- https://alien.dev/docs/production/rollouts.md
+- https://alien.dev/docs/production/troubleshooting.md
+- https://alien.dev/docs/production/remote-operator.md
 - CLI reference: https://alien.dev/docs/reference/cli/alien.md
 
 Run `alien <command> --help` before using a flag you haven't seen in this session.

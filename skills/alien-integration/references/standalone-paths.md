@@ -5,8 +5,8 @@ docs before writing code; this file keeps only the rules.
 
 ## Customer-managed keys
 
-Docs: `use-cases/customer-managed-keys`, `integrate/customer-keys-settings`,
-`deploy/customer-managed-keys`.
+Docs: `guide/customer-managed-keys`, `guide/customer-managed-keys/add-to-your-product`,
+`guide/customer-managed-keys/in-a-deployment`.
 
 **Product stays SaaS.** Encrypt sensitive fields through the Encryption Gateway:
 `POST https://encryption.alien.dev/v1/encrypt` and `/v1/decrypt`, with
@@ -27,12 +27,12 @@ customer's key.
 `Storage().encryptionKey(key)`, `Postgres().encryptionKey(key)`, or
 `Container().persistentStorage(size, { encryptionKey: key })`. The key choice is fixed when the
 resource is created; plan it before the first customer installs. Storage supports it on every
-cloud; Postgres and container volumes on AWS. Check `reference/resources/key` for the current
+cloud; Postgres and container volumes on AWS. Check `infrastructure/key` for the current
 matrix.
 
 ## Local models
 
-Docs: `use-cases/local-models`, `integrate/ai-models-settings`, `deploy/local-models`.
+Docs: `guide/local-ai-models`, `guide/local-ai-models/add-to-your-product`, `guide/local-ai-models/in-a-deployment`.
 
 **Product stays SaaS.** Point the existing OpenAI or Anthropic client at
 `https://ai.alien.dev/v1` with the AI Gateway key and `X-Alien-External-ID`. Customers without
@@ -51,8 +51,8 @@ and install-time choice between in-account AI and customer-provided keys.
 
 ## Remote Operator on an existing install
 
-Docs: `use-cases/remote-operator`, `operate/remote-operator/add-to-existing-install`,
-`operate/remote-operator/operations`, `operate/remote-operator/access-requests`.
+Docs: `production/remote-operator`, `production/remote-operator/add-to-existing-product`,
+`production/remote-operator/operations`, `production/remote-operator/access-requests`.
 
 - Keep the product's Helm chart, Terraform, or ECS service as the source of truth. Install the
   Operator as a **dedicated release** next to the application release; do not edit the
@@ -72,7 +72,7 @@ Docs: `use-cases/remote-operator`, `operate/remote-operator/add-to-existing-inst
 
 ## Single-tenant in your cloud
 
-Docs: `use-cases/single-tenant`, `deploy/single-tenant`.
+Docs: `infrastructure/platforms/single-tenant`.
 
 The same `alien.ts`, deployed into a dedicated account or region in your cloud per customer. In
 the dashboard: **Deployments**, **New Deployment**, **Deploy to your environment**, then account,
@@ -81,19 +81,19 @@ not a rewrite, so keep the stack free of assumptions about whose account it runs
 
 ## Kubernetes
 
-Docs: `deploy/kubernetes`. The customer installs your chart once with Helm. It runs the Operator,
+Docs: `infrastructure/platforms/kubernetes`. The customer installs your chart once with Helm. It runs the Operator,
 which pulls each release over outbound HTTPS (pull model). Check the chart's ServiceAccounts,
 Pod Security requirements, PVCs, and StorageClass against the customer's cluster. Install into an
 isolated test cluster with an explicit kubeconfig and context for every command.
 
 ## Linux machines (on-prem, bare metal)
 
-Docs: `deploy/machines`, `build/compute`. Hosts join a deployment with a join command and run a
+Docs: `infrastructure/platforms/machines`, `infrastructure/compute`. Hosts join a deployment with a join command and run a
 machine agent that pulls releases, updates itself one machine at a time, and keeps workloads
 running offline on the last plan. No GPUs on Machines today. Use `Daemon` for per-host software;
 see `patterns.md` for host daemons.
 
 ## Air-gapped
 
-Docs: `deploy/deployment-models` (air-gapped section). Each release is packaged into a folder the
+Docs: `infrastructure/platforms/deployment-models` (air-gapped section). Each release is packaged into a folder the
 customer carries in and applies with your CLI. Confirm with the user before promising it.

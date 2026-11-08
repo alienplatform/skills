@@ -2,7 +2,7 @@
 
 Five options, from nothing of yours in the customer's environment to the whole product. Each one
 is a candidate. Use the smallest one that meets the requirement. Docs:
-`https://alien.dev/docs/design/what-to-run-remotely.md`.
+`https://alien.dev/docs/guide/design.md`.
 
 | Option | Requirement it meets | Main reason |
 |---|---|---|
@@ -51,8 +51,8 @@ there, and the vendor's hosted backend uses it with short-lived credentials.
 - **Plain alternative**: per-tenant keys in the vendor's own KMS. The customer cannot revoke them,
   which is the point of the requirement.
 - **Wrong option if**: the buyer says data must not leave their account. A key does not move data.
-- Docs: `use-cases/customer-managed-keys`, `deploy/customer-managed-keys`,
-  `integrate/customer-keys-settings`, `examples/customer-keys`.
+- Docs: `guide/customer-managed-keys`, `guide/customer-managed-keys/in-a-deployment`,
+  `guide/customer-managed-keys/add-to-your-product`, `examples/customer-keys`.
 
 ### A model account
 
@@ -70,7 +70,7 @@ there, and the vendor's hosted backend uses it with short-lived credentials.
 - **Plain alternative**: ask for the customer's API key. Then the vendor stores a customer secret.
 - **Wrong option if**: the rest of the request (retrieved documents, tool results) is also content
   that must stay put.
-- Docs: `use-cases/local-models`, `deploy/local-models`, `integrate/ai-models-settings`,
+- Docs: `guide/local-ai-models`, `guide/local-ai-models/in-a-deployment`, `guide/local-ai-models/add-to-your-product`,
   `examples/customer-models`.
 
 ### A bucket
@@ -85,7 +85,7 @@ there, and the vendor's hosted backend uses it with short-lived credentials.
 - **Plain alternative**: ask each customer for a long-lived access key and store it.
 - **Wrong option if**: the buyer means processing must also stay in their account. Then use
   option 4.
-- Docs: `integrate/customer-storage`, `examples/customer-storage`.
+- Docs: `infrastructure/storage/customer-buckets`, `examples/customer-storage`.
 
 ## 2. An agent or connector
 
@@ -108,14 +108,14 @@ there, and the vendor's hosted backend uses it with short-lived credentials.
 - **Wrong option if**: the agent ends up storing customer data the product then serves. That is
   option 4.
 - Docs: `examples/private-database`, `examples/remote-tools`, `examples/endpoint-agent`,
-  `build/commands`.
+  `guide/commands`.
 
 ### Variant: stateless execution in the customer's account
 
 The vendor's hosted service runs sandboxes or jobs in the customer's account and drives them
 through remote bindings, while everything stored stays hosted. Route per tenant with an explicit
 placement record; never fall back to hosted execution on error. Say exactly which outputs (command
-output, file contents) return to the hosted side. Docs: `integrate/remote-sandboxes`.
+output, file contents) return to the hosted side. Docs: `infrastructure/sandbox/customer-sandboxes`.
 
 ## 3. A local cache
 
@@ -140,7 +140,7 @@ output, file contents) return to the hosted side. Docs: `integrate/remote-sandbo
 The product stays hosted: sign-in, billing, the UI, and metadata. The code that reads and writes
 customer content runs in the customer's account, with the storage it uses. This is the control
 plane / data plane split, and it is the usual answer when the requirement is "our data stays in
-our account". Docs: `design/control-plane-data-plane`.
+our account". Docs: `guide/design/control-plane-data-plane`.
 
 ### A service that owns the content
 
@@ -185,7 +185,7 @@ our account". Docs: `design/control-plane-data-plane`.
 
 Single-tenant is the same deployment placed in a dedicated account in the vendor's cloud. It is a
 placement, not a separate design, and the same `alien.ts` can move to the customer's account
-later. Docs: `use-cases/single-tenant`, `use-cases/byoc`.
+later. Docs: `infrastructure/platforms/single-tenant`, `guide/design/control-plane-data-plane`.
 
 ## 5. The whole product
 
@@ -201,7 +201,7 @@ later. Docs: `use-cases/single-tenant`, `use-cases/byoc`.
   debugging needs their engineers.
 - **Wrong option if**: only part of the product touches the content the requirement is about.
   Then option 4 keeps the rest hosted.
-- Docs: `use-cases/on-prem`, `examples/full-application`, `examples/customer-kubernetes`.
+- Docs: `infrastructure/platforms/machines`, `examples/full-application`, `examples/customer-kubernetes`.
 
 ### When the product needs the host
 
@@ -210,7 +210,7 @@ already owns. Run a `Daemon` on every machine and schedule work onto it, on `Com
 in a cloud account or on Linux hosts that join a deployment with a join command, update
 automatically, and keep running offline. Hosts keep running on the last plan they received,
 across reboots. Machines have no GPU support today. Check first whether a container on managed
-compute would do. Docs: `deploy/machines`, `deploy/kubernetes`, `build/compute`.
+compute would do. Docs: `infrastructure/platforms/machines`, `infrastructure/platforms/kubernetes`, `infrastructure/compute`.
 
 ## Remote Operator beside any option
 
@@ -229,4 +229,4 @@ compute would do. Docs: `deploy/machines`, `deploy/kubernetes`, `build/compute`.
   second.
 - **Wrong choice if**: the real problem is upgrades drifting across installs. Then Alien-managed
   deployments may be the next step; adopting them is a separate choice.
-- Docs: `use-cases/remote-operator`, `operate/remote-operator/add-to-existing-install`.
+- Docs: `production/remote-operator`, `production/remote-operator/add-to-existing-product`.

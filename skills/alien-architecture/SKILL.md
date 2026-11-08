@@ -59,16 +59,16 @@ Use these meanings in everything you write. Define them for the user the first t
 Fetch these as Markdown before proposing anything. They are the source of truth; this skill keeps
 only decision rules.
 
-- https://alien.dev/docs/use-cases.md
-- https://alien.dev/docs/design/what-to-run-remotely.md
-- https://alien.dev/docs/design/reach-a-deployment.md
-- https://alien.dev/docs/how-alien-works.md
-- https://alien.dev/docs/design/control-plane-data-plane.md, when a candidate is the split
+- https://alien.dev/docs/guide/design.md
+- https://alien.dev/docs/guide/design/whole-product.md, when a candidate is the whole product
+- https://alien.dev/docs/guide/design/connect-your-backend.md
+- https://alien.dev/docs/guide/how-alien-works.md
+- https://alien.dev/docs/guide/design/control-plane-data-plane.md, when a candidate is the split
 - Index of every page: https://alien.dev/llms.txt
 
-Read the use-case page that matches the requirement:
-`use-cases/single-tenant`, `use-cases/byoc`, `use-cases/customer-managed-keys`,
-`use-cases/local-models`, `use-cases/on-prem`, `use-cases/remote-operator`
+Read the page that matches the requirement:
+`infrastructure/platforms/single-tenant`, `guide/design/control-plane-data-plane`, `guide/customer-managed-keys`,
+`guide/local-ai-models`, `infrastructure/platforms/machines`, `production/remote-operator`
 (each at `https://alien.dev/docs/<path>.md`). For private systems, read the matching example:
 `examples/private-database`, `examples/remote-tools`, `examples/endpoint-agent`.
 
@@ -175,8 +175,8 @@ fit; each one works on its own.
 | Single-tenant | Isolation and region choice, customer installs nothing | A deployment in a dedicated account in the vendor's cloud. Can use a customer key on AWS. |
 
 Even the gateway paths need the customer to connect their key or model account through a setup
-link. Docs: `use-cases/customer-managed-keys`, `use-cases/local-models`,
-`integrate/customer-storage`, `use-cases/remote-operator`, `use-cases/single-tenant`.
+link. Docs: `guide/customer-managed-keys`, `guide/local-ai-models`,
+`infrastructure/storage/customer-buckets`, `production/remote-operator`, `infrastructure/platforms/single-tenant`.
 
 ## Rules
 

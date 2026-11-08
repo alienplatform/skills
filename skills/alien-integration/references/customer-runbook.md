@@ -44,4 +44,4 @@ customer-visible surface:
 - Error messages your product shows during setup.
 
 Grep the repository's customer-facing files and generated templates for internal names you do
-not want customers to see. Docs: `integrate/white-label`.
+not want customers to see. Docs: `deployment-ux/branding`.

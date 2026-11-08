@@ -1,6 +1,6 @@
 # Releases and CI
 
-Docs: `https://alien.dev/docs/build/releases.md`, `operate/rollouts.md`,
+Docs: `https://alien.dev/docs/guide/releases.md`, `production/rollouts.md`,
 `reference/cli/alien.md`.
 
 ## The model

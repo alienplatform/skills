@@ -1,8 +1,8 @@
 # Reach a deployment from your backend
 
 Implement exactly the rows in the decision record's "what crosses" table. Docs:
-`https://alien.dev/docs/design/reach-a-deployment.md`, `build/commands.md`,
-`build/remote-bindings.md`, `build/networking.md`, `build/inputs-and-secrets.md`.
+`https://alien.dev/docs/guide/design/connect-your-backend.md`, `guide/commands.md`,
+`guide/remote-bindings.md`, `guide/networking.md`, `guide/inputs-and-secrets.md`.
 
 Your backend and each deployment talk in three directions:
 
@@ -114,7 +114,7 @@ await bindings.kv("jobs").setJson("settings", { retentionDays: 30 })
 
 Audit the whole browser path: request bodies, URL paths and queries, navigation, telemetry, and
 error reporting. On a tenant switch, discard the previous endpoint, token, and cached content.
-The endpoint can be public or reachable only from the customer's network (`build/networking`).
+The endpoint can be public or reachable only from the customer's network (`guide/networking`).
 
 ## Uploads
 

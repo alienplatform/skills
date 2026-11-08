@@ -1,6 +1,6 @@
 # Local development and tests
 
-Docs: `https://alien.dev/docs/build/local-development.md`, `build/testing.md`,
+Docs: `https://alien.dev/docs/guide/local-development.md`, `guide/testing.md`,
 `reference/sdk/testing.md`.
 
 ## `alien dev`

@@ -46,7 +46,7 @@ the customer's app with its own identity.
 ## Stateless execution in the customer's account
 
 A hosted service runs sandboxes or jobs in the customer's account. Docs:
-`integrate/remote-sandboxes`, `reference/resources/sandbox`.
+`infrastructure/sandbox/customer-sandboxes`, `infrastructure/sandbox`.
 
 - Route per tenant with a placement record. A tenant with no record takes today's path unchanged.
 - Make the tenant ID a required field on the provision call so the compiler finds every caller.

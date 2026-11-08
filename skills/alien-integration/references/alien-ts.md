@@ -1,9 +1,9 @@
 # Writing `alien.ts`
 
 `alien.ts` declares what each customer environment gets. Read these first:
-`https://alien.dev/docs/build/stacks.md`, `build/compute.md`, `build/resources.md`,
-`build/frozen-and-live.md`, `build/inputs-and-secrets.md`, `build/permissions.md`, and
-`reference/resources/<type>.md` for each resource.
+`https://alien.dev/docs/guide/stacks.md`, `infrastructure/compute.md`, `infrastructure/using-resources.md`,
+`guide/frozen-and-live.md`, `guide/inputs-and-secrets.md`, `guide/permissions.md`, and
+`infrastructure/<type>.md` for each resource.
 
 ## Example
 

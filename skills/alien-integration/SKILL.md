@@ -22,8 +22,8 @@ code itself: how is this deployed today, and where does each process get its con
    Operator), a short record is enough.
 2. **Read the docs for what you will build.** Fetch pages as Markdown from
    `https://alien.dev/docs/<path>.md`; the index is `https://alien.dev/llms.txt`. Start with
-   `quickstart`, `build/stacks`, `build/frozen-and-live`, `build/inputs-and-secrets`, and the
-   pages for each resource you use under `reference/resources/`. Docs win over this skill and
+   `guide/quickstart`, `guide/stacks`, `guide/frozen-and-live`, `guide/inputs-and-secrets`, and the
+   pages for each resource you use under `infrastructure/`. Docs win over this skill and
    over memory when they differ.
 3. **Pin versions.** Use one version for every `@alienplatform/*` package. Check the published
    types (`node_modules/@alienplatform/*/dist/*.d.ts`) before using an API.
