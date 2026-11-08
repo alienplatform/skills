@@ -1,11 +1,22 @@
 # Classify the data
 
-Run this when the user cares about sensitive data (Q1 = A). Moving everything is expensive, so the
-line between what stays in the control plane and what moves to the data plane is drawn per field,
-not per service. You fill the worksheet from the code; the user decides the judgment calls; the
-buyer's security review has the final say.
+Run this when the user cares about sensitive data (Q1 = A). Draw the line between the control plane
+and the data plane per field, not per service: moving whole services is expensive. You fill the
+worksheet from the code, the user decides the judgment calls, and the buyer's security review has
+the final say. Docs: `https://alien.dev/docs/guide/design/classify-your-data.md`.
+
+Say "customer data" or "content", not "PII". In a database product, the rows are the content.
 
 ## Steps
+
+```text
+- [ ] 1. Find every place data lives or travels
+- [ ] 2. Group the fields into classes
+- [ ] 3. Settle the judgment calls with the user
+- [ ] 4. Test every field that stays in your cloud
+- [ ] 5. Trace every path that crosses, pick a fix for each
+- [ ] 6. Write the worksheet into the decision record
+```
 
 1. **Find every place data lives or travels.** From the code: database tables and columns, object
    storage keys, caches and search indexes, API request and response bodies, events, webhooks and
@@ -13,10 +24,10 @@ buyer's security review has the final say.
    and traces, analytics events, URLs and query strings, emails and notifications, and model
    training or evaluation data.
 2. **Group the fields into the classes below.** Most fields need no discussion.
-3. **Settle the judgment calls with the user.** Ask only about fields the product actually has, a
-   few at a time, multiple choice: keep in your cloud / keep in theirs / don't send it at all /
-   Other.
-4. **Test every field that stays in your cloud:**
+3. **Settle the judgment calls.** Ask only about fields the product has, a few at a time, multiple
+   choice: keep in your cloud / keep in theirs / don't send it at all / Other.
+4. **Test every field that stays in your cloud.** If a field fails a test, move it to the data
+   plane or stop sending it, then test again.
    - *Breach:* if this table leaked, would the customer's security team call it a breach of their
      data?
    - *Reconstruction:* could someone recover or guess the content from it?
@@ -26,18 +37,16 @@ buyer's security review has the final say.
 6. **Write it down** in the decision record: field, class, plane, reason. Open questions go to the
    buyer. "For this phase" is a valid answer when it's written down.
 
-Say "customer data" or "content", not "PII". In a database product, the rows are the content.
-
 ## Classes
 
 | Class | What it is | Typical fields | Plane |
 |---|---|---|---|
 | Content | What the product exists to store or process | Message bodies, documents, files, code, records, prompts, attachments | Data plane |
-| Derived | Anything computed from content | Model outputs, summaries, reports, search indexes, embeddings, caches, extracted text | Data plane |
-| Describing text | Short text that reveals content | Subjects, titles, previews, filenames, headers, URLs, query text, custom instructions, error messages with excerpts | Data plane by default |
-| Credentials | Grants access to the customer's systems | OAuth tokens, database passwords, API keys, signed URLs | Data plane, or the customer's own secret store |
-| Account metadata | Sign-in, billing, authorization | Organizations, users, roles, plans, API key scopes, settings without content | Control plane |
-| Operational metadata | Running and billing the product | Random IDs, opaque references, timestamps, status, counts, sizes, durations, token counts, region, version, health, error categories | Control plane |
+| Outputs and derived data | Anything computed from content | Model outputs, summaries, reports, search indexes, embeddings, caches, extracted text | Data plane |
+| Text that describes content | Short text that reveals content | Subjects, titles, previews, filenames, headers, URLs, query text, custom instructions, error messages with excerpts | Data plane by default |
+| Identifiers of outside people | People who aren't users of the product | Email addresses, names, phone numbers, IP addresses | Judgment call |
+| Credentials | Access to the customer's systems | OAuth tokens, database passwords, API keys, signed URLs | Data plane, or the customer's own secret store |
+| Activity and metadata | Signing in, running, and billing the product | Organizations, users, roles, plans, API key scopes, settings without content, random IDs, opaque references, timestamps, status, counts, sizes, durations, token counts, region, version, health, error categories | Control plane |
 
 ## Judgment calls
 
@@ -45,16 +54,16 @@ Always decide these with the user. Don't pick silently.
 
 | Field type | Why it's hard | Default |
 |---|---|---|
-| Email addresses, participant names | Needed for routing and limits, but often personal data | Ask. Either answer is valid if it's written down. |
+| Email addresses, participant names | Needed for routing and limits, but often personal data | Ask. Either answer is valid once it's written down. |
 | Filenames, document titles, repository names | They look like labels but describe content | Data plane |
 | Query text | Can reveal what the customer is working on | Data plane when it touches customer data |
-| Hashes of sensitive values | Useful for lookups; a hash of a low-entropy value can be reversed by guessing | Equality lookups only, and only if the buyer agrees. Never where users need the raw value. |
-| Aggregates | Small groups can identify people | Usually control plane; ask when groups are small |
-| Schedules and activity timing | Information about the customer | Usually control plane |
+| Hashes of sensitive values | Useful for lookups; a hash of a short or predictable value can be reversed by guessing | Equality lookups only, and only if the buyer agrees. Never where users need the raw value. |
+| Aggregates | Counts over small groups can identify people | Usually control plane; ask when groups are small |
+| Schedules and activity timing | They show how and when the customer works | Usually control plane |
 | Logs and error reports | Free text can carry content | Send categories and IDs; keep messages in the data plane, or redact |
 | Training and evaluation data | Needed to improve the product | Compute metrics in the data plane and send numbers, or consented samples deleted after use |
 
-## Paths that leak, and the fix
+## Paths that leak
 
 | Path | Fix |
 |---|---|
@@ -74,8 +83,8 @@ Copy this into the decision record and fill it.
 | Field or path | Where in the code | Class | Plane | Crosses as | Reason or open question |
 |---|---|---|---|---|---|
 | `messages.body` | `src/models/message.ts` | Content | Data plane | never | |
-| `messages.subject` | same | Describing text | Data plane | never | |
-| `messages.sender` | same | Judgment call | Control plane for now | metadata callback | Buyer to confirm |
-| `messages.id`, `created_at`, `size` | same | Operational | Control plane | metadata callback | |
+| `messages.subject` | same | Text that describes content | Data plane | never | |
+| `messages.sender` | same | Identifiers of outside people | Control plane for now | metadata callback | Buyer to confirm |
+| `messages.id`, `created_at`, `size` | same | Activity and metadata | Control plane | metadata callback | |
 | `message.received` webhook | `src/webhooks.ts` | Path | | IDs only | Consumer fetches from the data plane |
 | Send worker error logs | `src/send.ts` | Path | | category only | Provider errors can echo content |

@@ -1,11 +1,11 @@
 ---
 name: alien-integration
-description: Implement an approved Alien design end to end in a repository, whether it deploys an agent, a cache, the part of the product that touches customer data (a control plane / data plane split), or the whole product. Covers installing the alien CLI, writing a readable alien.ts, handlers with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings from your backend, local runs with alien dev, tests with @alienplatform/testing, releases from CI, the vendor control-plane integration with @alienplatform/platform-api (setup links, status, endpoints), the customer runbook, and validation in a real cloud. Use after the alien-architecture skill, when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move a Helm, Terraform, or Ansible deploy flow onto Alien.
+description: Implements an approved Alien design in a repository, from an agent or a cache to the part of the product that touches customer data or the whole product. Covers a readable alien.ts, workload code with @alienplatform/sdk, inputs and generated secrets, frozen and live resources, commands and remote bindings, local runs with alien dev, tests, releases from CI, setup links and status in the vendor backend, the customer runbook, and validation in a real cloud. Also converts an existing install (Helm chart, Kustomize, Docker Compose, ECS task definitions, Terraform, Ansible) and its stateful dependencies such as Postgres, Redis, ClickHouse, or Temporal. Use after the alien-architecture skill or when docs/alien-architecture.md exists, or when asked to add Alien, BYOC, customer-managed keys, local models, Remote Operator, single-tenant, on-prem, or Kubernetes deployments to a repo, or to move an existing deploy onto Alien.
 license: Apache-2.0
 compatibility: Requires Node.js 20+, Docker for alien dev, and network access to alien.dev. Cloud validation needs an AWS, Google Cloud, or Azure account the user controls.
 metadata:
   author: alienplatform
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Alien integration
@@ -19,13 +19,15 @@ code itself: how is this deployed today, and where does each process get its con
 1. **Read the decision record.** `docs/alien-architecture.md` names the option, what runs where,
    and what crosses the boundary. If it is missing or not approved, run the `alien-architecture`
    skill first. For a standalone path (only customer-managed keys, only local models, only Remote
-   Operator), a short record is enough.
+   Operator), or when the user's request already names the option, a short record is enough.
 2. **Read the docs for what you will build.** Fetch pages as Markdown from
-   `https://alien.dev/docs/<path>.md`; the index is `https://alien.dev/llms.txt`. Start with
-   `quickstart`, `build/stacks`, `build/frozen-and-live`, `build/inputs-and-secrets`, and the
-   pages for each resource you use under `reference/resources/`. Docs win over this skill and
+   `https://alien.dev/docs/<path>.md` (follow redirects: `curl -sL`); the index is
+   `https://alien.dev/llms.txt`. Start with
+   `guide/quickstart`, `guide/stacks`, `guide/frozen-and-live`, `guide/inputs-and-secrets`, and the
+   pages for each resource you use under `infrastructure/`. Docs win over this skill and
    over memory when they differ.
-3. **Pin versions.** Use one version for every `@alienplatform/*` package. Check the published
+3. **Pin versions.** Use one version for every `@alienplatform/*` package, and an `alien` CLI of
+   the same version (`alien --version`). Check the published
    types (`node_modules/@alienplatform/*/dist/*.d.ts`) before using an API.
 
 ## Approval gates
@@ -43,7 +45,21 @@ Stop and ask the user before each of these. They are visible to customers or cos
 
 ## Phases
 
-Load each reference when you reach its phase.
+Load each reference when you reach its phase. Copy this checklist into your work notes and check
+off phases as you finish them. Skip phases the decision record doesn't need.
+
+```text
+- [ ] 1. Profile
+- [ ] 2. Install and scaffold (2b existing install, 2c stateful dependencies)
+- [ ] 3. alien.ts written, type-checked, rendered, and linted
+- [ ] 4. Workload code
+- [ ] 5. Backend reaches the deployment
+- [ ] 6. Local run and tests pass
+- [ ] 7. Release from CI (approval gate)
+- [ ] 8. Vendor control plane (8b existing customers)
+- [ ] 9-11. Standalone paths, patterns, runbook as needed
+- [ ] 12. Validation ladder passed (approval gate for cloud steps)
+```
 
 ### 1. Profile → `references/profiling.md`
 
@@ -62,12 +78,29 @@ Inside an existing repository, `alien init` writes to an `alien/` directory by d
 also write `alien.ts` by hand. Docker must be running for `alien dev`. Keep the integration in its own directory or workspace
 package with its own lockfile when the repo's dependency graph is sensitive.
 
-### 2b. Existing chart or images → `references/existing-app.md`
+### 2b. An existing install → `references/existing-app.md`
 
-If the repo already ships container images with a Helm chart or compose file and the whole
-product installs remotely, follow that file before writing `alien.ts`: render the chart, check
-every image, show the mapping, then convert Jobs, sidecars, and config files as it describes. A
-chart that looks unsupported at first reading almost never is.
+If the product already installs somewhere as container images and the decision record moves the
+whole product, start from what the repository has:
+
+| The repository has | Read first |
+|---|---|
+| `Chart.yaml`, `kustomization.yaml`, or Kubernetes manifests | `references/from-helm.md` |
+| `docker-compose.yml` or `compose.yaml` | `references/from-compose.md` |
+| ECS task definitions (`aws_ecs_task_definition`, `taskdef.json`, `copilot/`) | `references/from-ecs.md` |
+| Terraform, CDK, or Pulumi that creates databases, buckets, or queues | `references/from-terraform.md` |
+| Ansible, shell scripts over SSH, or systemd units | `references/profiling.md`, then host daemons in `references/patterns.md` |
+
+Each file says how to read that source and how its objects map. Then follow the shared steps in
+`existing-app.md`: render, plan, audit, inspect images, and convert. Most repositories have more
+than one. Terraform that also runs ECS or EKS: read `from-terraform.md` and the workload file.
+A chart plus a Compose file for local runs: convert the one customers install today.
+
+### 2c. Stateful dependencies → `references/stateful-services.md`
+
+For Redis, RabbitMQ, ClickHouse, a durable-execution engine (Temporal, Restate, Inngest), and the
+one-shot setup steps around them: where each runs, health checks that prove readiness, TLS to
+managed databases, and what leaves the customer's account with a hosted engine.
 
 ### 3. Write `alien.ts` → `references/alien-ts.md`
 
@@ -115,6 +148,10 @@ Your backend creates setup links by `externalId`, polls deployment status, reads
 owns product activation. Use `@alienplatform/platform-api`. The workspace API key never reaches a
 browser.
 
+### 8b. Existing customers → `references/move-existing-customers.md`
+
+When hosted customers move into deployments: placements, the move recipe, and rehearsals.
+
 ### 9. Standalone paths → `references/standalone-paths.md`
 
 Customer-managed keys, local models, Remote Operator on an existing install, single-tenant,
@@ -145,6 +182,7 @@ When something fails, decide which kind it is before changing anything:
 | Environment | quota, model access not enabled, Docker not running, stale binary, expired token, third-party outage | Fix the environment; document it in the runbook |
 | Product defect (Alien) | documented behavior does not happen, a crash in the CLI | Write a minimal reproduction and tell the user; do not work around it in the product core |
 | Product defect (the user's app) | the app fails the same way without Alien | Report to the user; do not hide it in the integration |
+| Vendor configuration | a profile, flag, or threshold in the image's own config turns the feature off | Read the image's config, report it, and qualify the feature separately; don't change the profile to pass a test |
 
 Rule out the boring causes first: stale local builds, a stale API key in `.env`, laptop sleep,
 a provider outage.
@@ -152,12 +190,14 @@ a provider outage.
 ## Rules
 
 1. Prefer existing primitives (`Postgres`, `Vault`, `Kv`, setup containers, commands) over
-   adapters or new infrastructure. If a primitive is missing, say so; do not build a parallel
-   system.
+   adapters or new infrastructure. Try a primitive in `alien dev` before ruling it out. If one is
+   missing, report it; do not build a parallel installer, and do not edit these skills to fit a
+   workaround.
 2. Inventory every effect of the legacy deploy path before replacing any of it.
 3. Never fall back across the trust boundary. A lookup error refuses the request.
 4. Model infrastructure health, runtime activation, and product readiness separately. Running is
-   not usable.
+   not usable. Every long-lived container gets a health check that passes only when it does its
+   job, and a launch script exits when the process it started exits.
 5. If a supervisor adopts a running process, include the rendered config in its identity (hash
    it). Otherwise config-only releases never apply.
 6. Pin CPU architecture at artifact boundaries. AWS Workers build for arm64 by default; vendor
@@ -172,6 +212,10 @@ a provider outage.
     vocabulary out of the product's customer-facing text.
 11. Never commit credentials, private plans, or evidence screenshots to the repository.
 12. No customer or prospect names in code, commits, or docs; use `customer-1`.
+13. One module translates Alien bindings into the settings the product already reads (env vars,
+    files). No other product code reads Alien variables.
+14. Every program reads its own setting names. When an image needs TLS or a password, look up
+    the names in that image's config template, and prove the connection from the real process.
 
 ## Deliver
 

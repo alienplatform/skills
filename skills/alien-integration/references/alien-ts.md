@@ -1,15 +1,26 @@
 # Writing `alien.ts`
 
 `alien.ts` declares what each customer environment gets. Read these first:
-`https://alien.dev/docs/build/stacks.md`, `build/compute.md`, `build/resources.md`,
-`build/frozen-and-live.md`, `build/inputs-and-secrets.md`, `build/permissions.md`, and
-`reference/resources/<type>.md` for each resource.
+`https://alien.dev/docs/guide/stacks.md`, `infrastructure/compute.md`, `infrastructure/using-resources.md`,
+`guide/frozen-and-live.md`, `guide/inputs-and-secrets.md`, `guide/permissions.md`, and
+`infrastructure/<type>.md` for each resource.
+
+## Contents
+
+- Example
+- Readability rules
+- Frozen or live
+- Inputs
+- Compute choice
+- Local and cloud differences
+- Permissions
+- Before moving on
 
 ## Example
 
 A document-processing data plane: customer documents and job state stay in the customer's
-account, and the control plane calls the processor with commands. Type-checked against
-`@alienplatform/core` 3.3.41.
+account, and the control plane calls the processor with commands. Check each call against the
+types of the `@alienplatform/core` version you install.
 
 ```ts title="alien.ts"
 import * as alien from "@alienplatform/core"
@@ -143,7 +154,7 @@ frozen resources up front.
 ## Inputs
 
 - `providedBy: "developer"`: you set it per deployment (your API URL, public keys, plan
-  limits). Pass with `alien onboard <name> --input id=value` or through the API.
+  limits). Pass with `alien onboard <name> --allow you@example.com --input id=value` or through the API.
 - `providedBy: "deployer"`: the customer's admin sets it at setup. Keep these few and real.
 - `alien.secret({ providedBy: "deployer" })`: the admin writes it into their own secret store;
   Alien never sees it. Workloads wait (`WaitingForSecrets`) until it is present.
@@ -161,16 +172,44 @@ frozen resources up front.
 | One process per host, host access, nested virtualization | `Daemon` on a `ComputeCluster` or Machines |
 
 On GCP and Azure a `Worker` listens on port 8080. AWS Workers build for arm64 by default; ship a
-`Container` for amd64-only images. Declared ports are effectively immutable: choose them once.
+`Container` for amd64-only images. Changing a container's ports or public endpoints replaces it,
+and on a running deployment the update can be refused: choose them in the first release.
+
+For dependencies the product doesn't own (Redis, ClickHouse, a durable-execution engine) and for
+setup steps, see `stateful-services.md`.
+
+## Local and cloud differences
+
+Keep them few and visible: one `const local = ...` switch near the top, used where a resource
+or option exists only in the cloud (a customer-managed `Key`, sandbox lifetimes, some AI
+providers). Clear local-only settings in the cloud. An emulator endpoint variable
+(`AWS_ENDPOINT_URL`) left in the environment sends real cloud calls to localhost.
 
 ## Permissions
 
-- One profile per workload, granting named resources only.
+- One profile per workload, granting named resources only. A profile is a cloud identity:
+  workloads that share a profile share access. Give the workload that holds customer keys or
+  credentials its own profile, and services that call no cloud API an empty one.
 - Common permission sets: `storage/data-read`, `storage/data-write`, `kv/data-read`,
   `kv/data-write`, `queue/data-read`, `queue/data-write`. Check `reference/permissions` for the
   full list and what each grants.
-- `"*"` grants to every linked resource. Acceptable in a quickstart, not in a customer stack.
+- `"*"` grants to every linked resource. Acceptable in a quickstart, not in a customer stack. If a
+  deploy refuses an exact-resource grant on a live resource, use a stack-scoped entry limited to
+  that resource's permission sets, and say why in a comment.
+- To prove a refactor of `alien.ts` changes nothing, build the stack for each platform before and
+  after, and diff the stack JSON with sorted keys, masking only image paths.
 
 ## Before moving on
 
-Run `npx tsc --noEmit` on `alien.ts` and the workload code. Then run `alien dev`.
+Run `npx tsc --noEmit` on `alien.ts` and the workload code. `@alienplatform/core` is ESM only:
+the package that holds `alien.ts` needs `"type": "module"`. Render the customer's setup template
+and lint it, which needs no cloud account and catches values the cloud rejects (an unsupported
+database version, for example):
+
+```bash
+alien render --format cloudformation --stack . > template.yaml
+cfn-lint template.yaml
+```
+
+Linting the real template is a check of what the customer will run, not a test that a template
+contains a key. Then run `alien dev`.

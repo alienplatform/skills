@@ -1,10 +1,17 @@
 # Vendor control-plane integration
 
 Your product's backend talks to Alien. Alien does not host your control plane. Docs:
-`https://alien.dev/docs/integrate.md`, `integrate/setup-links.md`,
-`integrate/deployment-status.md`, `integrate/sizes-and-networks.md`,
-`integrate/remove-a-deployment.md`, `integrate/white-label.md`,
+`https://alien.dev/docs/deployment-ux/deploy-button.md`, `deployment-ux/setup-links.md`,
+`deployment-ux/deployment-progress.md`, `deployment-ux/sizes-and-networks.md`,
+`deployment-ux/remove-a-deployment.md`, `deployment-ux/branding.md`,
 `reference/sdk/platform-api.md`, and the REST reference under `reference/api`.
+
+## Contents
+
+- Choose how customers install
+- Backend code
+- Rules
+- Map statuses to product states
 
 ## Choose how customers install
 

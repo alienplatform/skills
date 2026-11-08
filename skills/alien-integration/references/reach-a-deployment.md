@@ -1,8 +1,17 @@
 # Reach a deployment from your backend
 
 Implement exactly the rows in the decision record's "what crosses" table. Docs:
-`https://alien.dev/docs/design/reach-a-deployment.md`, `build/commands.md`,
-`build/remote-bindings.md`, `build/networking.md`, `build/inputs-and-secrets.md`.
+`https://alien.dev/docs/guide/design/connect-your-backend.md`, `guide/commands.md`,
+`guide/remote-bindings.md`, `guide/networking.md`, `guide/inputs-and-secrets.md`.
+
+## Contents
+
+- Deployment to your backend
+- Commands
+- Remote bindings
+- Browser to the deployment
+- Uploads
+- Checks before moving on
 
 Your backend and each deployment talk in three directions:
 
@@ -112,14 +121,34 @@ await bindings.kv("jobs").setJson("settings", { retentionDays: 30 })
 3. The browser calls the deployment's endpoint with that token. The deployment verifies the
    signature with your public key, passed as a developer input.
 
+To rotate keys without a release, serve a JWKS from your backend instead. The deployment caches
+it, refetches on an unknown key ID, and pins the issuer to your backend's URL. Put the
+deployment's ID in the token's audience so a token for one deployment fails at another.
+
+Details that break first:
+
+- A plain link or download can't carry a header. Fetch the URL with the token, then navigate to
+  the result.
+- Event streams that put the token in the query string must keep it out of logs.
+- Add every deployment origin to your app's CSP `connect-src`.
+- The deployment checks the token on every request, and checks that the customer still belongs to
+  this deployment. A valid token must not keep working after a customer moves.
+- Prove it in the browser's network tab: content requests go to the deployment's origin, and
+  your backend's origin shows only sign-in and metadata calls.
+
 Audit the whole browser path: request bodies, URL paths and queries, navigation, telemetry, and
 error reporting. On a tenant switch, discard the previous endpoint, token, and cached content.
-The endpoint can be public or reachable only from the customer's network (`build/networking`).
+The endpoint can be public or reachable only from the customer's network (`guide/networking`).
 
 ## Uploads
 
 The deployment creates a signed upload URL for its own storage and returns it to the browser. The
 browser uploads straight into the customer's bucket. Your backend sees the job, not the file.
+
+A browser upload needs the bucket's CORS rules to allow `PUT` from your app's origin. Check the
+Storage docs for upload CORS before relying on it, and test the upload from a real browser in a
+cloud deployment. If it isn't available, the deployment can accept the upload and write it to
+storage itself.
 
 ## Checks before moving on
 

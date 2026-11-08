@@ -1,13 +1,22 @@
 # Decision record template
 
-Write this to `docs/alien-architecture.md` in the user's repository. Keep it under ~300 lines.
+## Contents
+
+- Requirement and answers
+- Components
+- What stays where (sensitive data only)
+- Candidates, each with its diagram, crossing calls, resources, and costs
+- Boundary checks
+- Recommendation, rejected options, open questions
+
+Write this to `docs/alien-architecture.md` in the user's repository. Keep it under 300 lines.
 Plain language, no marketing. Replace every `<...>`.
 
 ````markdown
 # Alien architecture: <product>
 
 Status: proposed | approved (<name>, <date>)
-Requirement owner: <who asked, e.g. "Customer 1 security team">
+Requirement owner: <who asked, for example "customer-1 security team">
 
 ## Requirement
 
@@ -55,10 +64,10 @@ What crosses the boundary:
 | <view document> | browser → deployment | endpoint + short-lived token | <content, never via your cloud> |
 
 Alien resources: <Storage "documents" (frozen), Kv "jobs" (frozen), Worker "processor" (live)>
-Setup: <push|pull>; customer admin runs <CloudFormation|Terraform|Helm|CLI> once.
-Changes that need setup rerun: <new frozen resource, permission changes>
+Initial setup: <push|pull>; the customer's admin runs <CloudFormation|Terraform|Helm|CLI> once.
+Changes that need initial setup rerun: <new frozen resource, permission changes>
 Failure behavior: <deployment down → content routes return 503; no hosted fallback>
-Operational cost: <what runs per customer, what the vendor supports>
+Operational cost: <what runs per customer, what you support>
 Cost to build: <what changes in the product, and roughly how much>
 Why not without Alien: <the plain alternative and why it loses or wins>
 
@@ -77,7 +86,7 @@ Why not without Alien: <the plain alternative and why it loses or wins>
 | Content transits your cloud | no | <...> |
 | Content transits a hosted gateway | no | <...> |
 | Metadata list reviewed by buyer | open question | |
-| Hosted concerns (sign-in, billing, UI) in the deployment | none | |
+| Hosted parts (sign-in, billing, UI) in the deployment | none | |
 | Fails closed | yes | |
 | Customer secrets stay in their store | yes | |
 

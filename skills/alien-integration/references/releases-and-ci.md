@@ -1,6 +1,6 @@
 # Releases and CI
 
-Docs: `https://alien.dev/docs/build/releases.md`, `operate/rollouts.md`,
+Docs: `https://alien.dev/docs/guide/releases.md`, `production/rollouts.md`,
 `reference/cli/alien.md`.
 
 ## The model
@@ -84,9 +84,19 @@ jobs:
         run: alien release --project docproc --channel beta
 ```
 
+Image size matters: every release pushes each image to each platform's registry, and a large
+image slows every cycle. Check layer sizes (`docker history`) before the first cloud release. If a
+push fails with HTTP 413, split the largest layer (for example, install heavy packages in
+separate layers) and report it.
+
 Before pushing:
 
 - Check every existing workflow's triggers. A push to a customer-facing branch can be a release.
 - Keep the release job independent of the product's existing release jobs, so a failure in one
   does not change the other's result.
 - If you changed a port, entrypoint, or path, grep kept workflows for the old value.
+- Make thin-image builds reproducible: pin base images by digest and keep timestamps out of
+  layers. Otherwise every release gives every service a new digest, and every service restarts.
+  Check that an unchanged service keeps its digest between two releases.
+- Create the release channel before the first release. A push that fails partway (a 401) can be
+  rerun without rebuilding. Clear `.alien/build` when the disk fills.

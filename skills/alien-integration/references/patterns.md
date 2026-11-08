@@ -2,6 +2,15 @@
 
 Load the section the decision record calls for.
 
+## Contents
+
+- Service overlay on an existing SaaS
+- A cache the customer reads locally
+- Stateless execution in the customer's account
+- Host daemons (loader and supervisor)
+- AI access from a workload
+- Endpoints and TLS
+
 ## Service overlay on an existing SaaS
 
 Sensitive routes move to a runtime in the customer's account; identity, policy, billing, and
@@ -46,7 +55,7 @@ the customer's app with its own identity.
 ## Stateless execution in the customer's account
 
 A hosted service runs sandboxes or jobs in the customer's account. Docs:
-`integrate/remote-sandboxes`, `reference/resources/sandbox`.
+`infrastructure/sandbox/customer-sandboxes`, `infrastructure/sandbox`.
 
 - Route per tenant with a placement record. A tenant with no record takes today's path unchanged.
 - Make the tenant ID a required field on the provision call so the compiler finds every caller.
@@ -54,6 +63,29 @@ A hosted service runs sandboxes or jobs in the customer's account. Docs:
   need no migration. A malformed prefixed handle fails.
 - A placement lookup error refuses the job. Never default to hosted.
 - Activate only after a real command runs in the customer runtime.
+- Store the sandbox ID that `create` or `getOrCreate` returns, and reconnect with it. Some
+  platforms ignore a requested ID, and neither call is idempotent: a retried create can make a
+  second sandbox. Guard concurrent creates for one workspace with a lock.
+- Platforms end sandboxes at their lifetime limit. Keep the workspace in storage and restore it on
+  the next access instead of extending the sandbox.
+- Put tools and native libraries in the sandbox image. Check the sandbox behavior docs for which
+  paths are writable and executable before installing packages at runtime.
+
+### Tools stay, code moves
+
+When an existing product runs untrusted code (code a model wrote, user scripts) as a local child
+process, move only that process into a `Sandbox`. The database, storage, and model credentials stay
+in the product's containers.
+
+- A small local bridge takes the child's place, so callers keep the same process contract: stdin,
+  stdout, exit status, signals, and any inherited pipes.
+- The bridge runs the real command through the sandbox's command API. If the child talks to its
+  parent over stdin while it runs, check the Sandbox API docs for streaming stdin before you
+  design the bridge; if it isn't there, report the gap. Copy workspace files in before the command
+  starts and changed files back before it exits.
+- The sandbox receives only the environment the bridge passes. No credentials.
+- Add the new execution path as one mode behind the product's existing setting, with its own
+  readiness check that runs a real command in a sandbox.
 - Say exactly which outputs (command output, file contents) return to the hosted side.
 
 ## Host daemons (loader and supervisor)
@@ -84,6 +116,12 @@ long-lived child processes that must survive upgrades.
   the product's own upstream setting in a small shim.
 - Prove traffic goes through the deployment: unset the provider key in the client's environment
   and watch the deployment's request counter move.
+- Model access differs per customer account. Call every model the product uses (including
+  helper models for embeddings, titles, or summaries) in the target account. A model that lists
+  is not always a model you may invoke. Make the default model an input.
+- On AWS, the first credential request of a container can wait for the role to be assumed. If
+  the provider SDK times out on instance metadata, raise its metadata timeout and retries
+  (`AWS_METADATA_SERVICE_TIMEOUT`, `AWS_METADATA_SERVICE_NUM_ATTEMPTS`).
 
 ## Endpoints and TLS
 

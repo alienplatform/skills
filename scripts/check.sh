@@ -31,8 +31,10 @@ if grep -rnE '—' skills README.md AGENTS.md; then echo "em dash found"; fail=1
 
 if [ "${1:-}" = "--links" ]; then
   for url in $(grep -rhoE 'https://alien\.dev/docs/[a-z0-9/_-]+\.md' skills README.md | sort -u); do
-    code=$(curl -s -o /dev/null -w '%{http_code}' "$url")
-    [ "$code" = "200" ] || { echo "$code $url"; fail=1; }
+    # Follow the host redirect, but flag a page that moved: the skill should name its new path.
+    read -r code final < <(curl -s -o /dev/null -L -w '%{http_code} %{url_effective}\n' "$url")
+    [ "$code" = "200" ] || { echo "$code $url"; fail=1; continue; }
+    [ "${final#https://www.}" = "${url#https://}" ] || { echo "moved $url -> $final"; fail=1; }
   done
 fi
 
