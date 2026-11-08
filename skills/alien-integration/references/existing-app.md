@@ -64,7 +64,9 @@ Copy this into the PR description or the mapping document and check items off:
    script and review the plan's diff.
 3. **Audit every object.** A table with one row per rendered object, and per hook, scheduled
    job, sidecar, and init container: ported, replaced by what, or dropped and why. Nothing is
-   dropped silently.
+   dropped silently. A "replaced" or "dropped" row names the command the object ran and what
+   now does that work. A reconcile job (an hourly sync) needs a named replacement (a webhook, a
+   consumer, a periodic task), not "probably redundant".
 4. **Inspect every image.** `docker pull` each one with the vendor's registry login, then
    `docker inspect` it. Record OS, libc (glibc or musl), architecture, `Entrypoint` and `Cmd`,
    user ID, and the paths it writes. A public image that fails to pull usually has a wrong tag.
@@ -74,7 +76,11 @@ Copy this into the PR description or the mapping document and check items off:
 5. **One named, commented `alien.Container` per service.** `.code({ type: "image", image })`,
    `.port()`, `.cpu()`, `.memory()`, `.replicas()`. Never generate containers from a list. Name
    each container after the hostname other services use today (the Kubernetes Service, the
-   Compose service, the Service Connect name), so `http://api:8000` keeps resolving.
+   Compose service, the Service Connect name). Other containers reach it at `<id>.svc`
+   (`http://api.svc:8000`), or at the URL from `container("api").getInternalUrl()`, which is
+   right on every platform. Every `.link()` also orders the start, so two services that call
+   each other can't link both ways (`CIRCULAR_DEPENDENCY_DETECTED`): link from the one that
+   starts second, give the other the `.svc` URL directly, and retry on startup.
 6. **Stateful services and setup steps.** Bundled databases, caches, analytics stores, durable
    execution engines, and every one-shot job: follow `stateful-services.md`. Scheduled jobs
    become a periodic task inside an existing service, or a Worker with a schedule trigger. On
@@ -83,16 +89,27 @@ Copy this into the PR description or the mapping document and check items off:
 7. **Config files.** Bake non-secret files into a thin image (`FROM vendor-image`, then `COPY`),
    built with `{ type: "source", src: "./deploy/<service>", toolchain: { type: "docker" } }`.
    `src` is the build context and `dockerfile` is relative to it, so the context must contain
-   every file the Dockerfile copies.
-   Render files that hold secrets from env at start, into a private tmpfs directory, with a real
-   serializer. Never bake a secret into an image layer.
-8. **Sidecars.** Find out why each exists. Fold a health sidecar into the main process's
-   readiness endpoint. Drop log and metrics shippers. Record every dropped sidecar in the audit.
+   every file the Dockerfile copies. Set mode and owner with `COPY --chown --chmod` so the
+   image's user can read each file; check with `docker run --rm --entrypoint ls <image> -l
+   <path>`. Render files that hold secrets from env at start, into a private tmpfs directory, with a real
+   serializer. Never bake a secret into an image layer. A program that reloads on a signal may
+   reread files but not env: render its config to a file, and rerender before you signal it.
+8. **Sidecars.** Find out why each exists, and record each in the audit:
+   - A health sidecar becomes a readiness endpoint on the main process that fails in the same
+     cases the sidecar did, not only when the process exits.
+   - A sidecar that produces a value others need (a bootstrap token, a first-admin key) becomes
+     a launcher step that writes it to a `Vault` or a volume.
+   - A log or metrics shipper is dropped only if nothing in the product reads its output.
+     Analytics events, usage metering, and audit logs often ride on one; keep that path.
 9. **Inputs.** Customer choices and credentials are `providedBy: "deployer"`, as few as
    possible. Passwords and keys the old install generated become `providedBy: "developer"`
    secrets with `generate: { length }` and `targetResources` naming every container that uses
    them. Never copy a value from the source into `alien.ts`, and never turn the source's secret
-   list into a customer form.
+   list into a customer form. For a credential the customer's admin types, encode the vendor's
+   policy (length, required character classes) with `minLength` and `pattern`, and state it in
+   `description`, so a bad value fails in the form, not at start. Drop secrets a linked resource supplies (a database password).
+   Nobody can read a generated secret back, so for one a person will need later (a bootstrap
+   admin password), have the setup step write a copy to a frozen `Vault`.
 10. **Credential formats.** A generated input is a plain random string. Find out what each
     consumer expects: a prefix (`sk-...`), a JSON list (`["key"]`), an exact length, a character
     set. Adapt in the launcher. Two forms of one value come from one input.
@@ -100,10 +117,25 @@ Copy this into the PR description or the mapping document and check items off:
     bindings with `@alienplatform/sdk` (for example `postgres("db").connection()`), sets the env
     names the app already reads, rewrites public URLs from resolved endpoints, then execs the
     original `Entrypoint` and `Cmd` from step 4. This one module is the only code that knows
-    about Alien. The SDK's native module has no musl build: on Alpine images, install a glibc
-    Node beside the app, or copy the app's static binaries onto a Debian base.
-12. **Hostnames.** Rewrite in-cluster names (`api.ns.svc.cluster.local`, `api.ns`,
-    `api.internal`) to the resource ID. Rewrite only hosts that are services in the source,
+    about Alien. The SDK's native module needs glibc. On a musl (Alpine) image, either copy the
+    app's static binaries onto a Debian base, or ship a private glibc runtime for the launcher
+    only: copy `node`, its libraries (`libstdc++`, `libgcc_s`), and glibc's loader and libraries
+    (`ld-linux-*.so`, `libc`, `libm`, `libdl`, `libpthread`, `libresolv`) from a Debian Node
+    image into `/opt/launcher/`. Start it with
+    `/opt/launcher/glibc/ld-linux-x86-64.so.2 --library-path /opt/launcher/glibc:/opt/launcher/lib /opt/launcher/node launch.mjs`.
+    The app it then execs keeps its own musl loader.
+    Read credentials through the SDK (`postgres("db").connection()`); don't parse
+    `ALIEN_*_BINDING` or its secret yourself, since their fields differ by platform. Don't name
+    launcher files after a package the image imports (`litellm.py` next to an app that imports
+    `litellm` shadows it). Test with the image's own entrypoint, not an in-process import.
+12. **Hostnames.** Rewrite in-cluster names (`api`, `api.ns.svc.cluster.local`, `api.ns`,
+    `api.internal`) to `<id>.svc`, or to the resolved internal URL. A reverse proxy (nginx)
+    with Docker's resolver (`resolver 127.0.0.11`) fails: render its config at start with the
+    nameserver from `/etc/resolv.conf`, and put upstreams in variables so it re-resolves after
+    a replica moves. An app that stores its own public URL (an OIDC issuer, redirect URIs,
+    webhook callbacks) breaks when the endpoint changes: the launcher compares the stored value
+    with the resolved endpoint at start and runs the app's own idempotent reconcile on a
+    difference. Rewrite only hosts that are services in the source,
     never external hosts. Public URLs come from the resolved endpoints at start, not from the
     source's domain values.
 13. **Writable paths.** Check that every path the image writes (`/tmp`, data directories,
@@ -111,9 +143,15 @@ Copy this into the PR description or the mapping document and check items off:
     user.
 14. **Permissions.** One profile per service. Grant resource-scoped permissions only to services
     that link the resource. Services that share a profile but receive different secrets fail
-    validation. Prove each grant with a real SDK call from the deployed container.
+    validation. Prove each grant with a real SDK call from the deployed container. On AWS, the
+    first credential request can wait for a role to be assumed: give AWS SDKs a metadata timeout
+    of a few seconds (`AWS_METADATA_SERVICE_TIMEOUT=5`, `AWS_METADATA_SERVICE_NUM_ATTEMPTS=3`).
 15. **Compute.** One ComputeCluster pool with an explicit architecture, CPU, and memory that
-    cover the sum of container requests. Check the machine type and disk size Alien picked before
+    cover the sum of container requests. A container with `.persistentStorage()` goes to its own
+    `stateful` pool unless you set `.pool()`; pin `.cluster()` and `.pool()` on every container
+    to keep one machine group. Check with `alien render`. Count public endpoints: on AWS each
+    has its own load balancer. After the first deploy, check the instance type the cloud
+    launched, and set the pool's machine type if the automatic pick is larger than needed. Check the machine type and disk size Alien picked before
     the first cloud deploy.
 16. **Health checks.** Use the app's real readiness path. Measure cold start, including
     migrations, and set `failureThreshold` to match. Services with no HTTP endpoint: see
@@ -139,4 +177,8 @@ Report these instead of hiding them:
 - No general file mounts, sidecars, or scheduled container runs.
 - No shared file system across replicas. A volume belongs to one replica.
 - No musl build of the SDK's native module.
+- No Container fields for custom seccomp profiles, added capabilities, PID limits, or sized
+  `tmpfs`, and no egress allowlist beyond `.egress("internet")`. Isolation that depends on them
+  moves untrusted code into a `Sandbox` (`patterns.md`), or is recorded as a gap. Never claim an
+  enforced allowlist you didn't configure.
 - On AWS, a stack that mixes a Worker with x86-only containers can't build for one architecture.

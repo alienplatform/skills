@@ -95,3 +95,8 @@ Before pushing:
 - Keep the release job independent of the product's existing release jobs, so a failure in one
   does not change the other's result.
 - If you changed a port, entrypoint, or path, grep kept workflows for the old value.
+- Make thin-image builds reproducible: pin base images by digest and keep timestamps out of
+  layers. Otherwise every release gives every service a new digest, and every service restarts.
+  Check that an unchanged service keeps its digest between two releases.
+- Create the release channel before the first release. A push that fails partway (a 401) can be
+  rerun without rebuilding. Clear `.alien/build` when the disk fills.

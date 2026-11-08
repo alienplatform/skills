@@ -35,14 +35,16 @@ kubectl kustomize overlays/production > rendered.yaml    # Kustomize
 | Kubernetes | `alien.ts` |
 |---|---|
 | Deployment | `Container` with an image |
-| StatefulSet with a PVC | `Container` with `.persistentStorage(size, { mountPath })` |
-| Service and container ports | `.port(n)`. Other containers use the resource ID as the hostname |
-| Ingress, Gateway route | `.publicEndpoint(name, port, "http")`. Names are unique across the stack |
+| StatefulSet with a PVC | `Container` with `.persistentStorage(size, { mountPath })` and `.pool()` (`existing-app.md`, step 15) |
+| Service and container ports | `.port(n)`. Other containers reach it at `<id>.svc` |
+| Ingress, Gateway route | `.publicEndpoint(name, port, "http")`. Names are unique across the stack. Several Ingress hosts or paths for one product: consider one proxy container with one endpoint, since each endpoint has its own load balancer cost |
 | Liveness or readiness probe (HTTP) | `.healthCheck({ path, port, failureThreshold })` |
 | Exec or TCP probe | A readiness endpoint in the launcher (`stateful-services.md`) |
 | `command` and `args` | `.command([...])`, which replaces the image's entrypoint |
 | ConfigMap as env | `.environment({...})` |
-| ConfigMap or Secret as a file | Thin image, or rendered from env at start |
+| ConfigMap or Secret as a file | Thin image, or rendered from env at start. On Kubernetes targets, an existing Secret can mount with `.kubernetesSecretMount({ secretName, mountPath })` |
+| `securityContext` | `.security({ profile: "restricted", runAsUser, runAsGroup, readOnlyRootFilesystem })`; refused under `alien dev` |
+| Probes, on Kubernetes targets | `.kubernetesLivenessProbe()` and `.kubernetesReadinessProbe()` as well as `.healthCheck()` |
 | Secret the chart generates | Developer secret with `generate` |
 | Secret the customer supplies | Deployer secret, written to the customer's own secret store |
 | Bundled Postgres subchart or operator | `alien.Postgres`, or an external binding on Kubernetes and machines |
@@ -56,7 +58,8 @@ kubectl kustomize overlays/production > rendered.yaml    # Kustomize
 | HorizontalPodAutoscaler | `.autoScale({ min, desired, max, targetCpuPercent })` |
 | `resources.requests` | `.cpu()` and `.memory()` |
 | nodeSelector, tolerations, instance sizes | ComputeCluster pool `requirements` |
-| ServiceAccount, Role, IRSA or Workload Identity | One permission profile per service |
+| ServiceAccount, IRSA or Workload Identity | One permission profile per service |
+| Role or ClusterRole rules for the Kubernetes API | Not in `alien.ts`: set them in the Helm setup package settings (`infrastructure/platforms/setup-packages`), and diff them against the old chart's |
 | `imagePullSecrets` | `docker login` before `alien release`; images are re-hosted |
 | `emptyDir` | `.ephemeralStorage(size)` |
 

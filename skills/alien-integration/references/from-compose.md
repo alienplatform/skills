@@ -35,8 +35,11 @@ docker compose --env-file .env.production --profile production config > rendered
 | A one-shot service (`restart: "no"`, exits when done) | A setup step |
 | `deploy.replicas` | `.replicas(n)` |
 | `deploy.resources` | `.cpu()` and `.memory()`; Compose often sets none, so measure |
-| `secrets`, `configs` | Inputs for secrets; thin image or env rendering for config |
-| `networks`, `restart`, `container_name`, `logging` | Drop: the stack network is private, and Alien restarts and logs containers |
+| `secrets` (files in `/run/secrets`, read through `*_FILE` variables) | An input; the launcher writes it to a private tmpfs file readable by the image's user, then sets `*_FILE` |
+| `configs` | Thin image, or rendered from env at start |
+| `user`, `read_only` | `.security({ profile: "restricted", runAsUser, runAsGroup, readOnlyRootFilesystem })`; refused under `alien dev`, so set it only for cloud targets |
+| `security_opt` (seccomp), `cap_add`, `pids_limit`, sized `tmpfs` | No field: a gap, or move the untrusted part into a `Sandbox` (`existing-app.md`, known gaps) |
+| `networks`, `restart`, `container_name`, `logging` | Drop: the stack network is private, and Alien restarts and logs containers. An `internal: true` network behind an egress proxy is a security control: `.egress("internet")` or a gap, never silently dropped |
 
 ## Details that break first
 

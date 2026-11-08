@@ -26,7 +26,8 @@ code itself: how is this deployed today, and where does each process get its con
    `guide/quickstart`, `guide/stacks`, `guide/frozen-and-live`, `guide/inputs-and-secrets`, and the
    pages for each resource you use under `infrastructure/`. Docs win over this skill and
    over memory when they differ.
-3. **Pin versions.** Use one version for every `@alienplatform/*` package. Check the published
+3. **Pin versions.** Use one version for every `@alienplatform/*` package, and an `alien` CLI of
+   the same version (`alien --version`). Check the published
    types (`node_modules/@alienplatform/*/dist/*.d.ts`) before using an API.
 
 ## Approval gates
@@ -181,6 +182,7 @@ When something fails, decide which kind it is before changing anything:
 | Environment | quota, model access not enabled, Docker not running, stale binary, expired token, third-party outage | Fix the environment; document it in the runbook |
 | Product defect (Alien) | documented behavior does not happen, a crash in the CLI | Write a minimal reproduction and tell the user; do not work around it in the product core |
 | Product defect (the user's app) | the app fails the same way without Alien | Report to the user; do not hide it in the integration |
+| Vendor configuration | a profile, flag, or threshold in the image's own config turns the feature off | Read the image's config, report it, and qualify the feature separately; don't change the profile to pass a test |
 
 Rule out the boring causes first: stale local builds, a stale API key in `.env`, laptop sleep,
 a provider outage.

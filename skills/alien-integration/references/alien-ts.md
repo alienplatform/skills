@@ -193,7 +193,11 @@ providers). Clear local-only settings in the cloud. An emulator endpoint variabl
 - Common permission sets: `storage/data-read`, `storage/data-write`, `kv/data-read`,
   `kv/data-write`, `queue/data-read`, `queue/data-write`. Check `reference/permissions` for the
   full list and what each grants.
-- `"*"` grants to every linked resource. Acceptable in a quickstart, not in a customer stack.
+- `"*"` grants to every linked resource. Acceptable in a quickstart, not in a customer stack. If a
+  deploy refuses an exact-resource grant on a live resource, use a stack-scoped entry limited to
+  that resource's permission sets, and say why in a comment.
+- To prove a refactor of `alien.ts` changes nothing, build the stack for each platform before and
+  after, and diff the stack JSON with sorted keys, masking only image paths.
 
 ## Before moving on
 

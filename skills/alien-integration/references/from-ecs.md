@@ -46,12 +46,13 @@ source and its variable files, and mark each value you couldn't resolve as unver
 | EBS volume on the task | `.persistentStorage(size, { mountPath })` |
 | EFS volume | A gap when replicas share files; move the files to `Storage`, or report it |
 | Bind mount, `ephemeralStorage` | `.ephemeralStorage(size)` |
-| Service Connect or Cloud Map name | The resource ID is the hostname (`existing-app.md`, step 12) |
+| Service Connect or Cloud Map name | `<id>.svc` (`existing-app.md`, step 12) |
 | EventBridge scheduled task | A periodic task in a service, or a Worker with a schedule trigger |
 | Capacity provider, instance type | ComputeCluster pool `requirements` |
 | Private ECR image | `alien release` re-hosts it; log in to ECR on the build machine |
 
-Drop these and record each in the audit: FireLens and other log routers, X-Ray and metrics
+Drop these and record each in the audit, after checking nothing in the product reads their
+output (`existing-app.md`, step 8): FireLens and other log routers, X-Ray and metrics
 agents (Alien collects container logs; `alien logs`), ECS Exec settings, deployment circuit
 breaker settings.
 

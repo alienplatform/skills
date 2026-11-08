@@ -7,7 +7,9 @@ verify section. Steps 2 onward are approval gates.
 ## 0. Quotas (day one)
 
 If the product needs special compute (GPUs, nested virtualization, large instances), check quotas
-in every account class you will touch before building anything.
+in every account class you will touch before building anything. For AI models, check the
+requests-per-minute quota and send one full-size request; a short probe proves access, not
+capacity.
 
 ## 1. Local
 
@@ -41,9 +43,16 @@ Each claim in the decision record gets a test that would fail if the claim were 
 - **Customer-managed key.** Disable the key in the customer's key service. A real write fails
   (a storage upload, a database write) with the provider's disabled-key error. Re-enable it. The
   next write succeeds and data written before is still readable. Note which stores the key does
-  not cover (machine root disks, for example) in the runbook.
+  not cover (machine root disks, for example) in the runbook. A volume already attached keeps
+  serving reads after the key is disabled: restart a stateful container and confirm it can't
+  come back, and say so in the runbook instead of promising instant revocation.
 - **Customer's models.** Call every model the product uses through the deployment, including
   helper models, in the customer's account. Unset any provider key the client could fall back to.
+  For an agent, run one conversation that calls a tool and continues for a second turn, and check
+  the final answer. Tests pass the provider's model ID as it appears on the wire.
+- **Defaults and the browser.** Run the main flow with default settings and no saved preferences.
+  Load every login and landing page in a fresh browser profile and list its network requests:
+  only the deployment's own origin should appear (no third-party CDN, fonts, or analytics).
 - **Data stays.** Put unique marker strings into test content. Search for them in the customer's
   stores (they are there) and in your control plane's database, logs, queues, and analytics (they
   are not).

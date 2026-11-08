@@ -103,6 +103,10 @@ Rules:
 - **Volumes have a minimum size on some clouds** (10 GiB on Google Cloud). Size every volume at
   least that.
 - **After the first upgrade, read the data back.** A volume that came back empty looks healthy.
+  Do the same after a restore and after scaling a stateful container up.
+- **Prove a backup by restoring it.** Write a marker, wait until the backup completes, check its
+  encryption with the provider's describe call, restore it to a scratch volume, and read the
+  marker.
 
 ## Setup steps
 
@@ -116,6 +120,7 @@ There is no Job resource. Pick one home per step:
 | Several steps in a fixed order (compose's one-shots) | A prefix of one single-replica service's command, in compose order, each idempotent |
 | Roles, databases, extensions on `alien.Postgres` | A setup step that links the database, or a command-enabled setup container |
 | Steps that belong to one dependency (a Temporal namespace) | That dependency's own launch script |
+| First-run steps of the app itself (first admin, provider import, initial sync) | The app's own reconciler, called from the setup step; safe to repeat, and tested on a fresh database |
 | Steps other services must wait for, with no backend to call a command | A setup container that runs them, then passes its health check; the services that depend on it link it |
 
 - Make every step idempotent. Use `IF NOT EXISTS`, and treat "already exists" as success only for
@@ -126,8 +131,9 @@ There is no Job resource. Pick one home per step:
 - On managed Postgres the admin user isn't a superuser. To create a database owned by another
   role, grant that role to the admin first (`GRANT app TO CURRENT_USER`), then
   `CREATE DATABASE ... OWNER app`.
-- Order services with `.link()`. A container starts once the containers it links are running and
-  pass their health checks. That replaces `depends_on` and wait-for init containers.
+- Order services with `.link()`. A container starts after the containers it links are running and
+  pass their health checks. That replaces `depends_on` and wait-for init containers, but not
+  connection retries: a slow cold start can outlast the wait, so the app still retries.
 
 ## Health checks prove readiness
 
@@ -143,6 +149,8 @@ its job:
   (`redis-cli ping`, the worker connected to its server). If you can't wrap the process, record
   the missing check as an open question.
 - Set `failureThreshold` from a measured cold start, including migrations.
+- A clustered store run as one node reports degraded health while it works (Elasticsearch
+  `yellow`, no replicas). Accept that state in the health check, or it never passes.
 - A launch script that starts a server in the background must exit when the server exits.
   Otherwise the container shows as running while nothing serves:
 
@@ -206,7 +214,9 @@ mode's maturity for your SDK language before choosing it.
   Temporal images are Alpine; if you need the SDK launcher, copy the static binaries
   (`temporal-server`, `temporal-sql-tool`) onto a Debian base instead.
 - The launch script reads the host and port from the database binding (`ALIEN_DB_BINDING`, JSON
-  tagged by `service`; see `reference/environment-variables`), then:
+  tagged by `service`; see `reference/environment-variables`). The fields differ by backend:
+  Aurora has `clusterEndpoint` and needs TLS, local Postgres has `host` and no TLS. Branch on
+  `service` and run the launcher under both. Then:
   1. `temporal-sql-tool --plugin postgres12 --endpoint <host> --port <port> --user temporal
      --database temporal update-schema -d .../postgresql/v12/temporal/versioned`. On a new
      database, run `setup-schema -v 0.0` first. Repeat for `temporal_visibility`.

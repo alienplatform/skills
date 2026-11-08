@@ -83,7 +83,9 @@ not a rewrite, so keep the stack free of assumptions about whose account it runs
 
 Docs: `infrastructure/platforms/kubernetes`. The customer installs your chart once with Helm. It runs the Operator,
 which pulls each release over outbound HTTPS (pull model). Check the chart's ServiceAccounts,
-Pod Security requirements, PVCs, and StorageClass against the customer's cluster. Install into an
+Pod Security requirements, PVCs, and StorageClass against the customer's cluster. List the
+cluster's `IngressClass` and `StorageClass` names before the first install and put the right ones
+in the runbook; a default like `traefik` often has a cluster prefix. Install into an
 isolated test cluster with an explicit kubeconfig and context for every command.
 
 ## Linux machines (on-prem, bare metal)
