@@ -77,10 +77,10 @@ alien releases promote <rel_previous> --channel production   # roll the whole ch
 
 `alien destroy` is only for deployments this machine created with `alien deploy`. For deployments created from a setup link, use `alien deployments delete`.
 
-## Private manager not becoming healthy
+## Private Alien Instance not becoming healthy
 ```bash
-alien managers status <mgr> --watch
-alien managers events <mgr>
-alien managers retry <mgr>
+alien instances status <instance> --watch
+alien instances events <instance>
+alien instances retry <instance>
 ```
-If the CLI shows no reason, check the manager's VMs and setup output in the cloud console.
+If the CLI shows no reason, check the Private Alien Instance's VMs and setup output in the cloud console.

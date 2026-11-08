@@ -154,7 +154,7 @@ frozen resources up front.
 ## Inputs
 
 - `providedBy: "developer"`: you set it per deployment (your API URL, public keys, plan
-  limits). Pass with `alien onboard <name> --input id=value` or through the API.
+  limits). Pass with `alien onboard <name> --allow you@example.com --input id=value` or through the API.
 - `providedBy: "deployer"`: the customer's admin sets it at setup. Keep these few and real.
 - `alien.secret({ providedBy: "deployer" })`: the admin writes it into their own secret store;
   Alien never sees it. Workloads wait (`WaitingForSecrets`) until it is present.

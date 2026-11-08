@@ -22,7 +22,7 @@ capacity.
 ## 2. Real cloud, with the customer's tools
 
 - Release to a non-production channel or a test project.
-- Onboard a test customer (`alien onboard customer-1`, or a setup link from your backend) and run
+- Onboard a test customer (`alien onboard customer-1 --allow you@example.com`, or a setup link from your backend) and run
   setup **as the customer would**: through the portal and the white-labeled customer CLI or the
   generated CloudFormation, Terraform, or Helm package. Not with a generic developer CLI.
 - Use a cloud account you control. Prefer the account's default network when quotas are tight.
