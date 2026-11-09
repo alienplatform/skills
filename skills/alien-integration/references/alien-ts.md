@@ -18,7 +18,7 @@
 
 ## Example
 
-A document-processing data plane: customer documents and job state stay in the customer's
+A document-processing data plane: customer documents and job state stay in your customer's
 account, and the control plane calls the processor with commands. Check each call against the
 types of the `@alienplatform/core` version you install.
 
@@ -202,7 +202,7 @@ providers). Clear local-only settings in the cloud. An emulator endpoint variabl
 ## Before moving on
 
 Run `npx tsc --noEmit` on `alien.ts` and the workload code. `@alienplatform/core` is ESM only:
-the package that holds `alien.ts` needs `"type": "module"`. Render the customer's setup template
+the package that holds `alien.ts` needs `"type": "module"`. Render your customer's setup template
 and lint it, which needs no cloud account and catches values the cloud rejects (an unsupported
 database version, for example):
 

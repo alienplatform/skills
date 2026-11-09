@@ -21,7 +21,7 @@ Your backend and each deployment talk in three directions:
 | Your backend → deployment | Commands or remote bindings | Instructions and small results |
 | Browser → deployment | A public or private endpoint with a short-lived token | Customer content |
 
-Only the third needs an endpoint in the customer's environment, and that endpoint can stay on the
+Only the third needs an endpoint in your customer's environment, and that endpoint can stay on the
 customer's private network. None of them needs an inbound port for your backend.
 
 ## Deployment to your backend
@@ -85,7 +85,7 @@ const result = await commands.invoke("process-document", { path: "inbox/contract
 
 ## Remote bindings
 
-When your backend must read or write one resource in the customer's environment directly (for
+When your backend must read or write one resource in your customer's environment directly (for
 example, keep a cache current, or use a customer's bucket or key), add the resource with
 `remoteAccess: true`:
 
@@ -94,7 +94,7 @@ example, keep a cache current, or use a customer's bucket or key), add the resou
 ```
 
 Your backend gets short-lived cloud credentials scoped to that resource and calls the cloud's own
-APIs. No network path into the customer's environment is involved.
+APIs. No network path into your customer's environment is involved.
 
 ```ts title="backend/sync.ts"
 import { Bindings } from "@alienplatform/bindings"
@@ -138,12 +138,12 @@ Details that break first:
 
 Audit the whole browser path: request bodies, URL paths and queries, navigation, telemetry, and
 error reporting. On a tenant switch, discard the previous endpoint, token, and cached content.
-The endpoint can be public or reachable only from the customer's network (`guide/networking`).
+The endpoint can be public or reachable only from your customer's network (`guide/networking`).
 
 ## Uploads
 
 The deployment creates a signed upload URL for its own storage and returns it to the browser. The
-browser uploads straight into the customer's bucket. Your backend sees the job, not the file.
+browser uploads straight into your customer's bucket. Your backend sees the job, not the file.
 
 A browser upload needs the bucket's CORS rules to allow `PUT` from your app's origin. Check the
 Storage docs for upload CORS before relying on it, and test the upload from a real browser in a

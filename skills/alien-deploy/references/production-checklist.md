@@ -22,7 +22,7 @@ what fails, and check it again. Details are on the matching pages under
 - [ ] Each link sets `maxDeployments` (usually 1) and an `expiresAt` (for example 7 days). A customer who starts over gets a new link for the same group.
 - [ ] `allowedPlatforms` and `allowedSetupMethods` list only what you support and tested. Sizes and network are in `stackSettings.defaults`.
 - [ ] `setupItems` lists what the customer connects (keys, models, bucket, sandbox), each with `required`. Omit it for a link that only deploys your stack.
-- [ ] The group name is short and DNS-safe. It becomes a prefix on resources in the customer's account.
+- [ ] The group name is short and DNS-safe. It becomes a prefix on resources in your customer's account.
 - [ ] You decided what one group is: usually one customer organization, sometimes one customer environment.
 - [ ] To find the deployment, list `GET /v1/deployments?project=…&deploymentGroup=…` and skip `delete-pending`, `deleting`, `deleted`, and `retained`. A lost group ID comes back from `GET /v1/deployment-groups/by-external-id`.
 - [ ] Links you no longer need are revoked only after the deployment is `deleted`. Revoking doesn't break deployments that hold their own token, but older CloudFormation stacks launched with the link's token can be deleted only after Alien removed their resources.
@@ -68,7 +68,7 @@ what fails, and check it again. Details are on the matching pages under
 - [ ] Normal removal uses `action: "cleanup"`. `forget` (needs a workspace admin key) is only for a deployment whose initial setup never ran or whose resources are already gone.
 - [ ] `teardown-required` and `retention-required` tell the admin exactly which stack to delete.
 - [ ] Your record stays "removing" until Alien reports `deleted` or `retained`.
-- [ ] Removal is built in before launch. Deleting only your own database row leaves the deployment running in the customer's cloud.
+- [ ] Removal is built in before launch. Deleting only your own database row leaves the deployment running in your customer's cloud.
 
 ## Branding and support
 

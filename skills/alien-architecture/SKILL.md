@@ -1,6 +1,6 @@
 ---
 name: alien-architecture
-description: Decides which part of a product should run outside the vendor's own cloud, and writes the decision down before any code changes. Use when a customer or prospect asks for BYOC (bring your own cloud), single-tenant or dedicated deployments, customer-managed keys (BYOK), their own AI models or model account, access to systems reachable only inside their network (a cluster, a private database, devices), low latency next to their app, on-prem, air-gapped, Kubernetes or bare-metal installs, or updates and remote operations for software already shipped as a Helm chart or Terraform module; when asked "what should run in the customer's cloud" or to design a control plane / data plane split; or when evaluating Alien for a repository. Asks a few multiple-choice questions, classifies sensitive data, writes docs/alien-architecture.md with two or three candidates, a recommendation, and rejected options, then stops for approval. Implementation belongs to the alien-integration skill.
+description: Decides which part of a product should run outside the vendor's own cloud, and writes the decision down before any code changes. Use when a customer or prospect asks for BYOC (bring your own cloud), single-tenant or dedicated deployments, customer-managed keys (BYOK), their own AI models or model account, access to systems reachable only inside their network (a cluster, a private database, devices), low latency next to their app, on-prem, air-gapped, Kubernetes or bare-metal installs, or updates and remote operations for software already shipped as a Helm chart or Terraform module; when asked "what should run in your customer's cloud" or to design a control plane / data plane split; or when evaluating Alien for a repository. Asks a few multiple-choice questions, classifies sensitive data, writes docs/alien-architecture.md with two or three candidates, a recommendation, and rejected options, then stops for approval. Implementation belongs to the alien-integration skill.
 license: Apache-2.0
 metadata:
   author: alienplatform
@@ -13,13 +13,13 @@ Alien deploys and operates software in remote environments: customer cloud accou
 accounts in your cloud, Kubernetes clusters, Linux servers, and devices. Software runs there to be
 close to one of these:
 
-- **Sensitive data**: kept in the customer's environment, or isolated (single-tenant,
-  customer-managed keys, the customer's model account).
+- **Sensitive data**: kept in your customer's environment, or isolated (single-tenant,
+  customer-managed keys, your customer's model account).
 - **Private networks**: a database in their VPC, the API of their cluster.
 - **Local resources**: files and processes on specific machines.
 - **Latency-critical workloads**: answers next to the app that calls you.
 
-The piece you deploy can be nothing (only the customer's key or model account), a small agent, the
+The piece you deploy can be nothing (only your customer's key or model account), a small agent, the
 part of the product that touches the data, or the whole product. Your backend stays in your cloud.
 
 This skill finds the smallest piece that meets the requirement and ends with a written decision
@@ -92,7 +92,7 @@ Work through the steps in order. Do not skip to a design. Copy this checklist an
 ### 1. Read
 
 Read the conversation and the repository: README, deploy files (Dockerfiles, Helm, Terraform,
-Compose), data models, and anything that talks to customer systems. Quote the customer's
+Compose), data models, and anything that talks to customer systems. Quote your customer's
 requirement if one was given.
 
 ### 2. Ask
@@ -177,14 +177,14 @@ the `alien-integration` skill, which reads the decision record.
 
 ## Standalone paths
 
-Some requirements need none of your code in the customer's environment, or only one piece. Propose
+Some requirements need none of your code in your customer's environment, or only one piece. Propose
 these directly when they fit. Each works on its own.
 
 | Path | When | How |
 |---|---|---|
 | Customer-managed keys only | Product stays hosted; buyer wants a key they can revoke | Hosted Encrypt/Decrypt API for fields, or an AWS Virtual Key for whole databases and buckets. In a deployment, a `Key` passed to `Storage`, `Postgres`, or container volumes. |
-| Local models only | Product stays hosted; prompts must use the customer's model account | Hosted AI Gateway (OpenAI and Anthropic SDK compatible). In a deployment, an `AI` resource linked to the workload; no API keys. |
-| Customer buckets only | Product stays hosted; files must rest in the customer's account | A `Storage` your backend reaches with remote bindings. No compute in their cloud. |
+| Local models only | Product stays hosted; prompts must use your customer's model account | Hosted AI Gateway (OpenAI and Anthropic SDK compatible). In a deployment, an `AI` resource linked to the workload; no API keys. |
+| Customer buckets only | Product stays hosted; files must rest in your customer's account | A `Storage` your backend reaches with remote bindings. No compute in their cloud. |
 | Remote Operator only | You already ship Helm, Terraform, or ECS and need to operate it | Add the Operator container to the existing installation. Versionless releases record which version each environment runs. |
 | Single-tenant | Isolation and region choice; the customer installs nothing | A deployment in a dedicated account in your cloud. Can use a customer key on AWS. |
 
@@ -197,7 +197,7 @@ setup link. Docs: `guide/customer-managed-keys`, `guide/local-ai-models`,
 
 1. Start from the requirement and the smallest piece that meets it. Every component you deploy
    runs in every customer environment, and you support it there.
-2. Do not describe the outcome as "running the product in the customer's cloud" unless the chosen
+2. Do not describe the outcome as "running the product in your customer's cloud" unless the chosen
    option is the whole product. Say which piece runs there.
 3. Do not default to the control plane / data plane split. Use it when the requirement is about
    where customer data is stored and processed. An agent answers private-network requirements; a
@@ -212,7 +212,7 @@ setup link. Docs: `guide/customer-managed-keys`, `guide/local-ai-models`,
    grant a cross-account role, use pull.
 7. Choose frozen or live per resource, not per resource type. Lead with the permission trade-off,
    not with "data persists".
-8. Customer-provided secrets go into the customer's own secret store. Alien never reads them. Do
+8. Customer-provided secrets go into your customer's own secret store. Alien never reads them. Do
    not design a flow where you collect a customer secret.
 9. Only propose capabilities the docs describe. If the design needs something the docs don't
    cover, list it under open questions instead of assuming it exists.

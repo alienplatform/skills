@@ -32,7 +32,7 @@ import { Alien } from "@alienplatform/platform-api"
 
 const alien = new Alien({ apiKey: process.env.ALIEN_API_KEY!, workspace: "acme" })
 
-// Call on click (not on render). Same externalId reuses the customer's group.
+// Call on click (not on render). Same externalId reuses your customer's group.
 export async function createSetupLink(customer: { id: string; slug: string }) {
   const link = await alien.setupLinks.create({
     project: "docproc",
@@ -85,7 +85,7 @@ export async function removeDeployment(id: string, status: string) {
 - **Default sizes and network** go in `policy.stackSettings.defaults` (`compute`, `network`). Show
   cost as your own estimate ("Approx. $X/month in cloud costs"); Alien has no cost API.
 - **A deployment appears when setup registers**, not when the link is created. A stack that fails
-  in the customer's cloud before registering is invisible to Alien. After a long wait with no
+  in your customer's cloud before registering is invisible to Alien. After a long wait with no
   deployment, tell the user the setup may have failed on their side.
 - **Two similar names.** `alien.deployments.getInfo({ id })` is `GET /v1/deployments/{id}/info`
   (endpoints for a deployment). `alien.deployment.getInfo()` (singular) is the setup-token install
@@ -106,7 +106,7 @@ export async function removeDeployment(id: string, status: string) {
 
 | Alien status | Product state |
 |---|---|
-| no deployment yet | Waiting for the customer's setup |
+| no deployment yet | Waiting for your customer's setup |
 | `pending`, `initial-setup`, provisioning statuses | Provisioning |
 | `running` | Ready to verify (then your own activation) |
 | `*-failed`, `error` | Failed: show `error.message`, offer retry |

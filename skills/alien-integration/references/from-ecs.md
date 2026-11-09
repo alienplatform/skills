@@ -77,7 +77,7 @@ breaker settings.
 - **Secrets by ARN.** A `valueFrom` names a secret in your account. In a customer's account it
   doesn't exist. Every one becomes an input or a value derived from a linked resource. For keys
   to your own vendors (payments, email, analytics), first decide whether that call belongs in
-  the customer's account at all, and record it in the decision record.
+  your customer's account at all, and record it in the decision record.
 - **IAM policies with `*` resources.** Don't copy them. Grant permission sets on the linked
   resources the service uses, then prove each with a real SDK call.
 - **Static frontends** on S3 and CloudFront, or Amplify. If the decision record moves the

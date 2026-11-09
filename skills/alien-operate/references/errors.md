@@ -46,7 +46,7 @@ or `get --json`. Docs: `https://alien.dev/docs/production/troubleshooting.md`.
 | `Deployment '<n>' is not tracked` | Same as above |
 
 After delete, check the account for leftovers by name prefix or tag. These stay on purpose: frozen
-resources (such as a bucket with the customer's data), final volume snapshots, anything initial
+resources (such as a bucket with your customer's data), final volume snapshots, anything initial
 setup didn't create (such as an existing VPC), and on Azure, key vaults in their soft-delete
 retention period.
 

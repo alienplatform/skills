@@ -100,7 +100,7 @@ A chart plus a Compose file for local runs: convert the one customers install to
 
 For Redis, RabbitMQ, ClickHouse, a durable-execution engine (Temporal, Restate, Inngest), and the
 one-shot setup steps around them: where each runs, health checks that prove readiness, TLS to
-managed databases, and what leaves the customer's account with a hosted engine.
+managed databases, and what leaves your customer's account with a hosted engine.
 
 ### 3. Write `alien.ts` → `references/alien-ts.md`
 

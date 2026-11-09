@@ -3,8 +3,8 @@
 ## Contents
 
 - Options at a glance
-- 1. Only the customer's own services: a key, a model account, a bucket
-- 2. An agent or connector, and stateless execution in the customer's account
+- 1. Only your customer's own services: a key, a model account, a bucket
+- 2. An agent or connector, and stateless execution in your customer's account
 - 3. A local cache
 - 4. The part that touches the data: a content service, a processing pipeline, the whole
   data-handling half, single-tenant
@@ -13,13 +13,13 @@
 
 ## Options at a glance
 
-The options run from nothing of yours in the customer's environment to the whole product. Each one
+The options run from nothing of yours in your customer's environment to the whole product. Each one
 is a candidate. Use the smallest one that meets the requirement. Docs:
 `https://alien.dev/docs/guide/design.md`.
 
 | Option | Requirement it meets | Main reason |
 |---|---|---|
-| 1. Only the customer's own services | "We need to revoke access." "Prompts stay under our AI agreement." | Sensitive data |
+| 1. Only your customer's own services | "We need to revoke access." "Prompts stay under our AI agreement." | Sensitive data |
 | 2. An agent or connector | "Our cluster and databases aren't reachable from the internet." | Private networks |
 | 3. A local cache | "Checks must be fast and keep working if you're down." | Latency |
 | 4. The part that touches the data | "Our content can't leave our account." | Sensitive data |
@@ -41,9 +41,9 @@ arrows pointing from the side that opens the connection.
 └──────────────────────────────┘           └─────────────────────────┘
 ```
 
-## 1. Only the customer's own services
+## 1. Only your customer's own services
 
-Nothing of yours runs in the customer's account. Initial setup creates a key, a bucket, or model
+Nothing of yours runs in your customer's account. Initial setup creates a key, a bucket, or model
 access there, and your backend uses it with short-lived credentials.
 
 ### A key
@@ -76,11 +76,11 @@ access there, and your backend uses it with short-lived credentials.
   short-lived credentials. Inside a deployment: `new alien.AI("llm")` linked to a workload calls
   Amazon Bedrock, Vertex AI, or Azure AI Foundry with the workload's own identity. Open-weight
   models: managed on those providers, or served by you in a GPU `Container` (for example vLLM).
-- **Crosses**: with the AI Gateway, prompts pass through Alien to the customer's provider. With the
-  `AI` resource, prompts never leave the customer's cloud.
+- **Crosses**: with the AI Gateway, prompts pass through Alien to your customer's provider. With the
+  `AI` resource, prompts never leave your customer's cloud.
 - **Failure**: provider refusals (model access not enabled, quota) surface as errors. Do not fall
   back to your own model account for that customer unless the customer agreed to it.
-- **Plain alternative**: ask for the customer's API key. Then you store a customer secret.
+- **Plain alternative**: ask for your customer's API key. Then you store a customer secret.
 - **Wrong option if**: the rest of the request (retrieved documents, tool results) is also content
   that must stay put.
 - Docs: `guide/local-ai-models`, `guide/local-ai-models/in-a-deployment`,
@@ -92,7 +92,7 @@ access there, and your backend uses it with short-lived credentials.
   delete everything by deleting one bucket), and processing can stay hosted.
 - **Alien provides**: initial setup creates a dedicated bucket and a role scoped to it. Your
   backend gets short-lived credentials through remote bindings and calls the bucket directly. No
-  compute runs in the customer's cloud, and object data does not pass through Alien.
+  compute runs in your customer's cloud, and object data does not pass through Alien.
 - **Crosses**: the content itself, between the bucket and your backend. Say so: this meets "stored
   in our account", not "never leaves our account".
 - **Plain alternative**: ask each customer for a long-lived access key and store it.
@@ -102,7 +102,7 @@ access there, and your backend uses it with short-lived credentials.
 
 ## 2. An agent or connector
 
-- **Fits**: part of the product needs a system reachable only from inside the customer's network:
+- **Fits**: part of the product needs a system reachable only from inside your customer's network:
   a Kubernetes API, a database in a private subnet, an internal API, servers or devices on site.
   AI agents use it for tool calls; data connectors and security scanners use it to run queries and
   report findings.
@@ -115,7 +115,7 @@ access there, and your backend uses it with short-lived credentials.
 - **Failure**: when the agent is unreachable, the feature that needs the private system returns an
   error. Nothing else in the product is affected.
 - **Cost**: one small workload per customer; the permissions it needs on the private system.
-- **Plain alternative**: a VPN, an allowlisted public endpoint on the customer's database, or a
+- **Plain alternative**: a VPN, an allowlisted public endpoint on your customer's database, or a
   customer-run connector you cannot update. Security teams refuse the first two; the third
   drifts.
 - **Wrong option if**: the agent ends up storing customer data the product then serves. That is
@@ -123,23 +123,23 @@ access there, and your backend uses it with short-lived credentials.
 - Docs: `guide/design/agent-or-connector`, `examples/private-database`, `examples/remote-tools`,
   `examples/endpoint-agent`, `guide/commands`.
 
-### Variant: stateless execution in the customer's account
+### Variant: stateless execution in your customer's account
 
-Your backend runs sandboxes or jobs in the customer's account and drives them through remote
+Your backend runs sandboxes or jobs in your customer's account and drives them through remote
 bindings, while everything stored stays hosted. Route per tenant with an explicit placement record;
 never fall back to hosted execution on error. Say exactly which outputs (command output, file
 contents) return to the hosted side. Docs: `infrastructure/sandbox/customer-sandboxes`.
 
 ## 3. A local cache
 
-- **Fits**: a check on every request of the customer's app (entitlements, feature flags, policy),
+- **Fits**: a check on every request of your customer's app (entitlements, feature flags, policy),
   where latency or offline tolerance matters and authoritative writes can stay hosted.
 - **Alien provides**: one `Kv` added with `remoteAccess: true`, usually frozen, or a small service
   in front of one. Your backend writes through remote bindings (`Bindings.forRemoteCustomer`) with
   short-lived credentials scoped to that one resource. The customer's app reads it with its own
   identity and sends writes to your hosted API.
 - **Crosses**: your backend writes versioned snapshots through cloud APIs. No network path into
-  the customer's VPC, no open port, no proxy.
+  your customer's VPC, no open port, no proxy.
 - **Failure**: reads keep working when your backend is down, within a stale window you define.
   Reads can be stale while an update is in flight. Locks, reservations, and atomic enforcement stay
   at the authority.
@@ -151,14 +151,14 @@ contents) return to the hosted side. Docs: `infrastructure/sandbox/customer-sand
 ## 4. The part that touches the data
 
 The product stays hosted: sign-in, billing, the UI, and metadata. The code that reads and writes
-customer content runs in the customer's account, with the storage it uses. This is the control
+customer content runs in your customer's account, with the storage it uses. This is the control
 plane / data plane split, and the usual answer when the requirement is "our data stays in our
 account". Docs: `guide/design/control-plane-data-plane`.
 
 ### A service that owns the content
 
 - **Fits**: an API over customer content (email, documents, records) where only content must stay
-  in the customer's account.
+  in your customer's account.
 - **Alien provides**: `Worker` or `Container` for the content routes, with `Storage`, `Kv`,
   `Postgres`, `Queue` as needed, linked with named permission profiles.
 - **Crosses**: the control plane keeps identity, policy, billing, and metadata. The data plane
@@ -175,7 +175,7 @@ account". Docs: `guide/design/control-plane-data-plane`.
 ### A processing pipeline
 
 - **Fits**: customers upload files the product parses or indexes.
-- **Alien provides**: `Storage` as the upload target, a `Queue`, and `Worker`s in the customer's
+- **Alien provides**: `Storage` as the upload target, a `Queue`, and `Worker`s in your customer's
   account. The browser uploads straight to their storage with a signed URL.
 - **Crosses**: job status and counts to the control plane. Never the file.
 - **Failure**: uploads and jobs fail closed when the data plane is down.
@@ -199,7 +199,7 @@ account". Docs: `guide/design/control-plane-data-plane`.
 ### Single-tenant
 
 Single-tenant is the same deployment placed in a dedicated account in your cloud. It is a
-placement, not a separate design, and the same `alien.ts` can move to the customer's account
+placement, not a separate design, and the same `alien.ts` can move to your customer's account
 later. Docs: `infrastructure/platforms/single-tenant`, `guide/design/control-plane-data-plane`.
 
 ## 5. The whole product

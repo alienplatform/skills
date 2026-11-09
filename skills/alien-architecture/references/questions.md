@@ -59,7 +59,7 @@ Multi-select. Always ask.
 
 The answer decides push or pull, which resources are frozen, and which compute fits.
 
-## Q3. What may leave the customer's environment?
+## Q3. What may leave your customer's environment?
 
 Single-select. Only when Q1 includes A.
 
@@ -87,7 +87,7 @@ Multi-select. Only when Q1 includes A. This is the first pass of the worksheet i
 - C. **Text that describes content**: subjects, titles, previews, filenames, URLs, query text,
   custom instructions
 - D. **Identifiers of people outside the customer**: email addresses, names, phone numbers, IPs
-- E. **Credentials** for the customer's systems: OAuth tokens, database passwords, API keys
+- E. **Credentials** for your customer's systems: OAuth tokens, database passwords, API keys
 - F. **Activity**: when things happened, how many, how long, status (usually not sensitive)
 - Other
 

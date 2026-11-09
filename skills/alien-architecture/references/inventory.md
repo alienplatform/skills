@@ -48,8 +48,8 @@ private-network or latency requirement, usually only the connector or the cache 
 | Files, documents, email bodies, uploads | Data plane | Customer data |
 | Search indexes, caches, embeddings over customer data | Data plane | Derived from customer data |
 | Workers that read or transform customer data | Data plane | They hold the data in memory |
-| Connectors to the customer's internal systems | Data plane | Reachable only from inside their network |
-| LLM calls with customer content in the prompt | Data plane, or the customer's model account | See `guide/local-ai-models` |
+| Connectors to your customer's internal systems | Data plane | Reachable only from inside their network |
+| LLM calls with customer content in the prompt | Data plane, or your customer's model account | See `guide/local-ai-models` |
 | Webhooks and event delivery | Control plane with thin events (IDs only), unless payloads are content | Delivery infrastructure is costly to move |
 
 ## Signals to note
