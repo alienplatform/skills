@@ -6,14 +6,14 @@ Load the section the decision record calls for.
 
 - Service overlay on an existing SaaS
 - A cache the customer reads locally
-- Stateless execution in the customer's account
+- Stateless execution in your customer's account
 - Host daemons (loader and supervisor)
 - AI access from a workload
 - Endpoints and TLS
 
 ## Service overlay on an existing SaaS
 
-Sensitive routes move to a runtime in the customer's account; identity, policy, billing, and
+Sensitive routes move to a runtime in your customer's account; identity, policy, billing, and
 metadata stay in the existing SaaS. Clients keep the same API contract and one base URL.
 
 - **Ownership before routing.** Persist one authoritative mode per tenant
@@ -38,8 +38,8 @@ metadata stay in the existing SaaS. Clients keep the same API contract and one b
 
 ## A cache the customer reads locally
 
-One `Kv` in the customer's account, written by the control plane through remote bindings, read by
-the customer's app with its own identity.
+One `Kv` in your customer's account, written by the control plane through remote bindings, read by
+your customer's app with its own identity.
 
 - Define which reads tolerate lag. Locks, reservations, and atomic enforcement stay at the
   authority.
@@ -52,9 +52,9 @@ the customer's app with its own identity.
 - Test: upstream unreachable, stale window honored, hard expiry enforced, sync outage repaired
   without a manual step.
 
-## Stateless execution in the customer's account
+## Stateless execution in your customer's account
 
-A hosted service runs sandboxes or jobs in the customer's account. Docs:
+A hosted service runs sandboxes or jobs in your customer's account. Docs:
 `infrastructure/sandbox/customer-sandboxes`, `infrastructure/sandbox`.
 
 - Route per tenant with a placement record. A tenant with no record takes today's path unchanged.

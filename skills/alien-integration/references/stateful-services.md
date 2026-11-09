@@ -22,7 +22,7 @@ and a launch script that hides a dead process.
 ## Choose the home first
 
 1. **A managed resource, if one exists.** Read the resource list at
-   `https://alien.dev/docs/infrastructure.md`. A managed database in the customer's cloud beats a
+   `https://alien.dev/docs/infrastructure.md`. A managed database in your customer's cloud beats a
    container you operate. Bundled Postgres becomes `alien.Postgres`.
 2. **A hosted service, for a durable-execution engine that supports outbound-only workers.** See
    [Durable execution](#durable-execution).
@@ -182,9 +182,9 @@ mistake shows up only in the cloud.
 ## Durable execution
 
 The engine holds workflow state, timers, and retries. Decide where it runs before writing
-`alien.ts`, because it decides what leaves the customer's account.
+`alien.ts`, because it decides what leaves your customer's account.
 
-| Option | What it takes | What leaves the customer's account |
+| Option | What it takes | What leaves your customer's account |
 |---|---|---|
 | Self-hosted in the deployment | The engine as a container (below) | Nothing |
 | Hosted by the engine's vendor or by you | Workers connect out; the engine is elsewhere | Workflow metadata, and payloads unless you encrypt them |

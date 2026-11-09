@@ -18,7 +18,7 @@ customer's key.
   settings page. The portal card is **Bring your own key**. Your team never handles the key.
 - Plaintext passes through the gateway. The root key is cached up to 5 minutes, so revocation
   takes effect within minutes. Write customer-facing text that says exactly this.
-- Handle `KEY_UNAVAILABLE` (HTTP 503): fail the request and show that the customer's key is
+- Handle `KEY_UNAVAILABLE` (HTTP 503): fail the request and show that your customer's key is
   unavailable. Do not fall back to an unencrypted path or your own key.
 - Test revocation for real: disable the key, wait, confirm errors, re-enable, confirm recovery
   without data loss.
@@ -83,7 +83,7 @@ not a rewrite, so keep the stack free of assumptions about whose account it runs
 
 Docs: `infrastructure/platforms/kubernetes`. The customer installs your chart once with Helm. It runs the Operator,
 which pulls each release over outbound HTTPS (pull model). Check the chart's ServiceAccounts,
-Pod Security requirements, PVCs, and StorageClass against the customer's cluster. List the
+Pod Security requirements, PVCs, and StorageClass against your customer's cluster. List the
 cluster's `IngressClass` and `StorageClass` names before the first install and put the right ones
 in the runbook; a default like `traefik` often has a cluster prefix. Install into an
 isolated test cluster with an explicit kubeconfig and context for every command.

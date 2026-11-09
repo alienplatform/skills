@@ -7,7 +7,7 @@ deployment runs end to end with a new test customer.
 ## One artifact, many placements
 
 - The hosted product and every customer deployment run the same `alien.ts` and the same images.
-  A dedicated deployment in your cloud and one in the customer's account differ by inputs and
+  A dedicated deployment in your cloud and one in your customer's account differ by inputs and
   setup, not by code. Avoid `if customer-hosted` branches in the product.
 - Keep a placement table in your control plane: customer → deployment, with a generation number
   that increases on every move. Routing, tokens, and the deployment itself read it.
@@ -25,7 +25,7 @@ deployment runs end to end with a new test customer.
 
 ## Moving one customer
 
-1. **Fence.** Stop the customer's background work at the source and record exactly what was
+1. **Fence.** Stop your customer's background work at the source and record exactly what was
    running, so the target can restart the same set.
 2. **Export** a bundle next to the source: database rows, events, and objects. Use a data-only
    format with a schema version, never a serialized object format such as pickle.
