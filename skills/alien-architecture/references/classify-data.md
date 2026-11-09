@@ -28,7 +28,7 @@ Say "customer data" or "content", not "PII". In a database product, the rows are
    choice: keep in your cloud / keep in theirs / don't send it at all / Other.
 4. **Test every field that stays in your cloud.** If a field fails a test, move it to the data
    plane or stop sending it, then test again.
-   - *Breach:* if this table leaked, would the customer's security team call it a breach of their
+   - *Breach:* if this table leaked, would your customer's security team call it a breach of their
      data?
    - *Reconstruction:* could someone recover or guess the content from it?
    - *Need:* do sign-in, billing, authorization, scheduling, or operating the deployment need it?
@@ -45,7 +45,7 @@ Say "customer data" or "content", not "PII". In a database product, the rows are
 | Outputs and derived data | Anything computed from content | Model outputs, summaries, reports, search indexes, embeddings, caches, extracted text | Data plane |
 | Text that describes content | Short text that reveals content | Subjects, titles, previews, filenames, headers, URLs, query text, custom instructions, error messages with excerpts | Data plane by default |
 | Identifiers of outside people | People who aren't users of the product | Email addresses, names, phone numbers, IP addresses | Judgment call |
-| Credentials | Access to the customer's systems | OAuth tokens, database passwords, API keys, signed URLs | Data plane, or the customer's own secret store |
+| Credentials | Access to your customer's systems | OAuth tokens, database passwords, API keys, signed URLs | Data plane, or your customer's own secret store |
 | Activity and metadata | Signing in, running, and billing the product | Organizations, users, roles, plans, API key scopes, settings without content, random IDs, opaque references, timestamps, status, counts, sizes, durations, token counts, region, version, health, error categories | Control plane |
 
 ## Judgment calls

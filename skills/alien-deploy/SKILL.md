@@ -22,7 +22,7 @@ account with their own credentials. After that, Alien rolls out releases without
 
 Fetch these as Markdown. They are the source of truth for every API field.
 
-- https://alien.dev/docs/deployment-ux.md (the three ways to offer setup)
+- https://alien.dev/docs/deployment-ux.md (how to offer setup)
 - https://alien.dev/docs/deployment-ux/setup-links.md
 - https://alien.dev/docs/deployment-ux/deploy-button.md
 - https://alien.dev/docs/deployment-ux/setup-screen.md (only for your own setup screen)
@@ -69,7 +69,7 @@ One batch, multiple choice, each with **Other**. Pre-select from what the code s
 ### 2. Read the product
 
 Find, with file paths: the settings area and its UI framework; how the signed-in session resolves
-the customer's organization (this becomes the **external ID**, your own immutable ID for the
+your customer's organization (this becomes the **external ID**, your own immutable ID for the
 customer); the background job system; any existing per-customer records and locks; how the
 backend calls other APIs (language, HTTP client). Many backends aren't TypeScript: use plain HTTP
 when the TypeScript client doesn't fit.
@@ -81,7 +81,7 @@ path for Google Cloud sign-in and Linux servers.
 
 1. A backend route that creates a setup link for the signed-in customer's external ID, on click.
 2. A button on the settings page that opens the returned portal link in a new tab.
-3. A background job, or a webhook receiver, that finds the deployment in the customer's
+3. A background job, or a webhook receiver, that finds the deployment in your customer's
    deployment group and stores its status in your own record.
 4. Status shown on the page, mapped to a few product states (see `deployment-progress`).
 5. Verify and activate: your own check that the deployment serves, then your own "active" flag.

@@ -44,7 +44,7 @@ rolling back, the old deployment serves the customer again and the target refuse
 
 ## Rehearse
 
-Rehearse with production-shaped data, locally and then in a cloud account. Rehearsals find what
+Rehearse with production-like data, locally and then in a cloud account. Rehearsals find what
 unit tests miss: identity columns, ordering between objects and rows, records with no source data,
 and signed URLs for the wrong region. Measure downtime per customer and tell the customer the
 number.

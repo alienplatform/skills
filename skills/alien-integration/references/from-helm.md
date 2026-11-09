@@ -46,7 +46,7 @@ kubectl kustomize overlays/production > rendered.yaml    # Kustomize
 | `securityContext` | `.security({ profile: "restricted", runAsUser, runAsGroup, readOnlyRootFilesystem })`; refused under `alien dev` |
 | Probes, on Kubernetes targets | `.kubernetesLivenessProbe()` and `.kubernetesReadinessProbe()` as well as `.healthCheck()` |
 | Secret the chart generates | Developer secret with `generate` |
-| Secret the customer supplies | Deployer secret, written to the customer's own secret store |
+| Secret the customer supplies | Deployer secret, written to your customer's own secret store |
 | Bundled Postgres subchart or operator | `alien.Postgres`, or an external binding on Kubernetes and machines |
 | Bundled Redis, RabbitMQ, ClickHouse | Stateful `Container` with the stock image (`stateful-services.md`) |
 | Hook Job, init Job | A setup step (`stateful-services.md`) |

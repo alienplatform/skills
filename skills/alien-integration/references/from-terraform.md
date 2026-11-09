@@ -39,13 +39,13 @@ from initial setup. For each resource, ask which product feature uses it, and de
 | Secrets Manager secret, SSM parameter | `alien.Vault` for values the product writes; inputs for values set at install |
 | Lambda function | `alien.Worker` |
 | ECS service, EKS workload | See `from-ecs.md` or `from-helm.md` |
-| Bedrock or other model access | AI access in the customer's account (`patterns.md`) |
+| Bedrock or other model access | AI access in your customer's account (`patterns.md`) |
 | SES | `alien.Email` |
 | IAM roles and policies for workloads | One permission profile per workload, with named permission sets |
 | VPC, subnets, NAT, security groups | Drop: chosen at initial setup (`--network create` or `byo`) |
 | Route 53 records, ACM certificates | Public endpoints; custom domains are set at initial setup |
 | CloudWatch alarms, dashboards, log groups | Drop and record; deployment health and logs come from Alien |
-| Terraform state buckets, CI roles | Drop: they belong to your account, not the customer's |
+| Terraform state buckets, CI roles | Drop: they belong to your account, not your customer's |
 
 ## Frozen or live
 
@@ -57,7 +57,7 @@ the choice and the reason next to each declaration.
 
 - **Per-environment variables** (`prod.tfvars`) hold values that differ between your accounts.
   Each one becomes a developer input, a deployer input, or a constant. Most become constants.
-- **Cross-account access.** A role that lets your account read the customer's resources is the
+- **Cross-account access.** A role that lets your account read your customer's resources is the
   wrong direction. Deployments call out to your backend (`reach-a-deployment.md`).
 - **Database settings.** Engine version, extensions, and parameter groups. Render the setup
   template and lint it (`alien-ts.md`): some engine versions can't create new clusters. A major

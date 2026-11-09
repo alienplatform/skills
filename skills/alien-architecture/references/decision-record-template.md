@@ -20,7 +20,7 @@ Requirement owner: <who asked, for example "customer-1 security team">
 
 ## Requirement
 
-> <the requirement in the customer's words>
+> <the requirement in your customer's words>
 
 Answers (from `questions.md`):
 - Why it runs outside your cloud: <sensitive data | private networks | local resources | latency | updates and operations only | everything>
@@ -47,7 +47,7 @@ Only when sensitive data is in scope. The filled worksheet from `classify-data.m
 
 ### A. <option name> (recommended)
 
-Option: <only the customer's own services | an agent or connector | a local cache | the part that touches the data | the whole product>
+Option: <only your customer's own services | an agent or connector | a local cache | the part that touches the data | the whole product>
 
 ```text
 ┌─ YOUR CLOUD ─────────────────┐            ┌─ <where: customer-1 AWS account> ─┐
